@@ -146,12 +146,12 @@ func Render(output string)  {
 	pdf.SetX(leftMargin)
 	pdf.SetY(yLine2 + summaryBlochHeight + 2*padding)
 	pdf.SetFont(fontTypeBold, "", 10)
-	pdf.Cell(nil, "Image is " + imageAllowed)
+	pdf.Cell(nil, "Image is " + imageCompliant)
 
 	// Block Number of Vulnerabilities
 	pdf.Br(brSize*1.5)
 	pdf.SetX(leftMargin)
-	pdf.Cell(nil, "Number of Vulnerabilities")
+	pdf.Cell(nil, "Image Vulnerabilities")
 	pdf.Br(brSize)
 	yTable1 := pdf.GetY()
 	pdf.SetStrokeColor(0, 0, 0)

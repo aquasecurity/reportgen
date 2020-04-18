@@ -7,7 +7,7 @@ var (
 	registry = "[image Registry]"
 	imageData = "[Image Date]"
 	imageOs = "[Image OS]"
-	imageAllowed = "[Allowed/Disallowed]"
+	imageCompliant = "[Compliant/Non-Compliant]"
 
 	countCritical = "[count of critical]"
 	countHigh = "[count of high]"
