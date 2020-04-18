@@ -13,6 +13,6 @@ COPY --from=builder /reportgen/main /reportgen/
 COPY --from=builder /reportgen/pdfrender/*.ttf /reportgen/pdfrender/
 COPY --from=builder /reportgen/pdfrender/*.png /reportgen/pdfrender/
 WORKDIR /reportgen
-RUN adduser -S -D -H -h /reportgen report
-USER report
+#RUN adduser -S -D -H -h /reportgen report
+#USER report
 ENTRYPOINT ["/reportgen/main"]
