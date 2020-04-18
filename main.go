@@ -2,8 +2,12 @@ package main
 
 import (
 	"./pdfrender"
+	"./rest"
 	"flag"
 	"fmt"
+	"github.com/joho/godotenv"
+	"os"
+	"strings"
 )
 
 var (
@@ -35,21 +39,34 @@ func init()  {
 
 func checkRequiredParams() bool {
 	var missingRequiredFlags []string
-	if serverUrl == "" {
-		missingRequiredFlags = append(missingRequiredFlags, cmdServer)
-	}
 	if registryName == "" {
 		missingRequiredFlags = append(missingRequiredFlags, cmdRegistry)
 	}
 	if imageName == "" {
 		missingRequiredFlags = append(missingRequiredFlags, cmdImage)
 	}
-	if user == "" {
-		missingRequiredFlags = append(missingRequiredFlags, cmdUser)
+
+	if serverUrl == "" {
+		if serverUrl = os.Getenv("server"); serverUrl == "" {
+			fmt.Println("Server isn't setup (as -server param or environment variable)")
+			return false
+		}
+	}
+
+	if user == ""  {
+		if user = os.Getenv("user"); user == "" {
+			fmt.Println("User isn't setup (as -user param or environment variable)")
+			return false
+		}
+
 	}
 	if password == "" {
-		missingRequiredFlags = append(missingRequiredFlags, cmdPassword)
+		if password = os.Getenv("password");password == "" {
+			fmt.Println("Password isn't setup (as -password param or environment variable)")
+			return false
+		}
 	}
+
 	if len(missingRequiredFlags) > 0 {
 		message := "Param '%s' is missing or the value is empty.\n"
 		for _, f := range missingRequiredFlags {
@@ -61,8 +78,9 @@ func checkRequiredParams() bool {
 }
 
 func main() {
-/*
 	flag.Parse()
+	godotenv.Load()
+
 	if ok:=checkRequiredParams(); !ok {
 		fmt.Println("All params are required!")
 		fmt.Println("Run with key '-h' for usage.")
@@ -75,6 +93,17 @@ func main() {
 	fmt.Println("Image:", imageName)
 	fmt.Println("User:", user)
 	fmt.Println("Password:", password)
-*/
-	pdfrender.Render(output)
+
+
+
+	var filename string
+	if !strings.HasSuffix(output, ".pdf") {
+		filename = output + ".pdf"
+	} else {
+		filename = output
+	}
+	data := rest.GetData(serverUrl, user, password, registryName, imageName)
+	data.Server = serverUrl
+	pdfrender.Render(filename, data)
+	fmt.Println("Report was written to", filename)
 }

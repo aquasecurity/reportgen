@@ -1,6 +1,7 @@
 package pdfrender
 
 import (
+	"../data"
 	"github.com/signintech/gopdf"
 	"log"
 	"time"
@@ -21,6 +22,8 @@ const (
 	ttfPathRegular = "./pdfrender/calibri.ttf"
 	ttfPathBold = "./pdfrender/calibri-bold.ttf"
 	longPath = "./pdfrender/logo.png"
+
+	dateFormat = "2006-01-02 15:04"
 )
 
 var cellOption = gopdf.CellOption{
@@ -29,8 +32,8 @@ var cellOption = gopdf.CellOption{
 	Float:  gopdf.Right,
 }
 
-func Render(output string)  {
-	currentDate := time.Now().Format("2006-01-02 15:04")
+func Render(output string, data *data.Report)  {
+	currentDate := time.Now().Format(dateFormat)
 
 	fontType := "calibri"
 	fontTypeBold := "calibri-bold"
@@ -71,7 +74,7 @@ func Render(output string)  {
 	pdf.SetY(yTitleBase + 3*padding+15)
 	pdf.SetTextColor(0,0,0)
 	pdf.SetFont(fontType, "", 10)
-	pdf.Cell(nil, "Aqua Server – " + aquaServer)
+	pdf.Cell(nil, "Aqua Server – " + data.Server)
 
 	// line after 1
 	yLine1 := pdf.GetY()+ 2* padding
@@ -94,13 +97,9 @@ func Render(output string)  {
 	pdf.SetY(pdf.GetY()+padding)
 	pdf.SetX(leftMargin)
 	pdf.SetFont(fontType, "", 10)
-
-	multilinesString,_ := pdf.SplitText(imageSummary, width)
-	for _,line := range multilinesString {
-		pdf.SetX(leftMargin)
-		pdf.Cell(nil, line)
-		pdf.SetY(pdf.GetY()+15)
-	}
+	pdf.SetX(leftMargin)
+	pdf.Cell(nil, "This section contains the image summary")
+	pdf.SetY(pdf.GetY()+15)
 
 	// Block after Summary
 	yLine2 := pdf.GetY()+padding
@@ -114,7 +113,7 @@ func Render(output string)  {
 	pdf.SetY(yLine2+padding)
 	pdf.SetX(leftMargin+padding)
 	pdf.SetFont(fontTypeBold, "", 10)
-	pdf.Cell(nil, "Image name " + imageName)
+	pdf.Cell(nil, "Image name \"" + data.ImageName+"\"")
 	pdf.Br(brSize)
 	pdf.SetFont(fontType, "", 8)
 
@@ -132,20 +131,23 @@ func Render(output string)  {
 	pdf.Br(brSize)
 	pdf.SetX(leftMargin+padding)
 	pdf.SetFont(fontTypeBold, "", 8)
-	pdf.Cell(nil, "Registry: " + registry)
+	pdf.Cell(nil, "Registry: " + data.Registry)
 
 	pdf.Br(brSize)
 	pdf.SetX(leftMargin+padding)
-	pdf.Cell(nil, "Image Creation Date: " + imageData)
+	pdf.Cell(nil, "Image Creation Date: " + data.Created.Format(dateFormat))
 
 	pdf.Br(brSize)
 	pdf.SetX(leftMargin+padding)
-	pdf.Cell(nil, "OS: " + imageOs)
+	pdf.Cell(nil, "OS: " + data.Os + "(" + data.OsVersion+ ")")
 
 	// after Image Name block
 	pdf.SetX(leftMargin)
 	pdf.SetY(yLine2 + summaryBlochHeight + 2*padding)
 	pdf.SetFont(fontTypeBold, "", 10)
+	var imageAllowed string
+	if data.ImageAllowed {imageAllowed = "Allowed"} else {imageAllowed="Disallowed"}
+
 	pdf.Cell(nil, "Image is " + imageAllowed)
 
 	// Block Number of Vulnerabilities

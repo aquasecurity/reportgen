@@ -1,6 +1,7 @@
 FROM golang:alpine as builder
 RUN apk add git
 RUN go get github.com/signintech/gopdf
+RUN go get github.com/joho/godotenv
 RUN mkdir /reportgen
 ADD . /reportgen/
 WORKDIR /reportgen

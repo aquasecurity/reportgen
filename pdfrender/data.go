@@ -1,13 +1,13 @@
 package pdfrender
 
 var (
-	aquaServer = "[Aqua Server URL]"
-	imageSummary = "[This section contains the image summary: musl libc through 1.1.23 has an x87 floating-point stack adjustment imbalance, related to the math/i386/ directory. In some cases, use of this library could introduce out-of-bounds writes that are not present in an application's source code.][This section contains the image summary: musl libc through 1.1.23 has an x87 floating-point stack adjustment imbalance, related to the math/i386/ directory. In some cases, use of this library could introduce out-of-bounds writes that are not present in an application's source code.]"
-	imageName = "[img name]"
-	registry = "[image Registry]"
-	imageData = "[Image Date]"
-	imageOs = "[Image OS]"
-	imageAllowed = "[[Allowed/Disallowed]]"
+//	aquaServer = "[Aqua Server URL]"
+//	imageSummary = "[This section contains the image summary: musl libc through 1.1.23 has an x87 floating-point stack adjustment imbalance, related to the math/i386/ directory. In some cases, use of this library could introduce out-of-bounds writes that are not present in an application's source code.][This section contains the image summary: musl libc through 1.1.23 has an x87 floating-point stack adjustment imbalance, related to the math/i386/ directory. In some cases, use of this library could introduce out-of-bounds writes that are not present in an application's source code.]"
+	//imageName = "[img name]"
+	//registry = "[image Registry]"
+//	imageData = "[Image Date]"
+	//imageOs = "[Image OS]"
+	//imageAllowed = "[[Allowed/Disallowed]]"
 
 	countCritical = "[count of critical]"
 	countHigh = "[count of high]"
