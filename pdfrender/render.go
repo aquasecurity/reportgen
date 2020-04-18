@@ -149,11 +149,10 @@ func Render(output string, data *data.Report)  {
 	if data.ImageAllowed {imageAllowed = "Allowed"} else {imageAllowed="Disallowed"}
 
 	pdf.Cell(nil, "Image is " + imageAllowed)
-
 	// Block Number of Vulnerabilities
 	pdf.Br(brSize*1.5)
 	pdf.SetX(leftMargin)
-	pdf.Cell(nil, "Number of Vulnerabilities")
+	pdf.Cell(nil, "Image Vulnerabilities")
 	pdf.Br(brSize)
 	yTable1 := pdf.GetY()
 	pdf.SetStrokeColor(0, 0, 0)
