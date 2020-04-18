@@ -24,6 +24,8 @@ var (
 )
 
 func getData(url, user, password string) []byte  {
+	fmt.Println("Getting data from", url)
+
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
 	req.SetBasicAuth(user, password)
