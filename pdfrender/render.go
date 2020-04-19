@@ -222,10 +222,9 @@ func Render(output string, data *data.Report)  {
 	}
 
 	// Sensitive Data
-	pdf.Br(brSize*2)
+	pdf.Br(brSize)
 	checkEndOfPage( &pdf, brSize+80)
 	pdf.SetX(leftMargin)
-
 
 	pdf.SetFont(fontTypeBold, "", 10)
 	pdf.Cell(nil, "Sensitive Data")
@@ -516,6 +515,8 @@ func showImageAssuranceChecks( pdf *gopdf.GoPdf, checksDa []data.CheckPerformedT
 		description, ok := imageAssurance[ checksDa[i].Control ]
 		if ok {
 			checks[0][i%numberCellInRow] = description
+		} else {
+			checks[0][i%numberCellInRow] = checksDa[i].Control
 		}
 		if checksDa[i].Failed {
 			checks[1][i%numberCellInRow] = "FAIL"
