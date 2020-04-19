@@ -8,16 +8,9 @@ type Report struct {
 	Vulnerabilities *VulnerabilitiesType
 }
 
-func (report *Report) MappingImageAssuranceChecks() map[string]bool {
-	result := make(map[string]bool)
-	for _,v := range report.General.AssuranceResults.ChecksPerformed {
-		result[v.Control] = v.Failed
-	}
-	return result
-}
-
-func (report *Report) GetImageAssurancePolicies() map[string]bool {
+func (report *Report) GetImageAssurancePolicies() (map[string]bool,map[string][]CheckPerformedType) {
 	result := make(map[string] bool)
+	checks := make(map[string][]CheckPerformedType)
 
 	for _, policy := range report.General.AssuranceResults.ChecksPerformed {
 		if _, ok := result[policy.PolicyName]; !ok {
@@ -26,6 +19,8 @@ func (report *Report) GetImageAssurancePolicies() map[string]bool {
 		if policy.Failed {
 			result[policy.PolicyName] = true
 		}
+
+		checks[policy.PolicyName] = append(checks[policy.PolicyName], policy)
 	}
-	return result
+	return result, checks
 }

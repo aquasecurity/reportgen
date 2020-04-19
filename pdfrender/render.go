@@ -20,8 +20,9 @@ const (
 	heightPage = 842- bottomMargin
 	brSize = 20
 
+	numberCellInRow = 3
 	cellHeight = 25
-	cellWidth = width/5.0
+	cellWidth = width/numberCellInRow
 
 	ttfPathRegular = "./pdfrender/calibri.ttf"
 	ttfPathBold = "./pdfrender/calibri-bold.ttf"
@@ -37,6 +38,23 @@ var cellOption = gopdf.CellOption{
 	Align:  gopdf.Middle | gopdf.Center,
 	Border: 0,
 	Float:  gopdf.Right,
+}
+
+var imageAssurance = map[string]string {
+	"blacklisted_packages": "Blacklisted Packages",
+	"custom_checks":        "Custom Checks",
+	"cve_blacklist":        "Blacklisted CVE",
+	"force_microenforcer":  "MicroEnforcer Deployed",
+	"license":              "Approved Licenses",
+	"malware":              "Malware",
+	"max_score":            "Maximum Vulnerability Score",
+	"max_severity":         "Maximum Vulnerability Severity",
+	"partial_results":      "Partial Scan Results",
+	"required_packages":    "Required Packages",
+	"root_user":            "Run as Superuser",
+	"sensitive_data":       "Sensitive Data",
+	"trusted_base_images":  "Trusted Base Image",
+	"whitelisted_licenses": "Whitelisted Licenses",
 }
 
 func Render(output string, data *data.Report)  {
@@ -168,19 +186,20 @@ func Render(output string, data *data.Report)  {
 	pdf.SetLineWidth(0.5)
 	showColorfulTable(&pdf, yTable1)
 
+
 	showTextIntoTable(&pdf, leftMargin, yTable1, &[2][5]string{
 		{"CRITICAL","HIGH","MEDIUM","LOW","NEGLIGIBLE",},
 		{strconv.Itoa( data.General.Critical), strconv.Itoa(data.General.High),strconv.Itoa(data.General.Medium),strconv.Itoa(data.General.Low),strconv.Itoa(data.General.Negligible),},
-	})
+	}, 5)
 
 	// Image Assurance Policies
 	pdf.SetY(yTable1 + cellHeight*2+ brSize)
 	pdf.SetX(leftMargin)
 	pdf.Cell(nil, "Image Assurance Policies")
 
+	policiesTotal, policiesChecks := data.GetImageAssurancePolicies()
 
-
-	for name,value := range data.GetImageAssurancePolicies() {
+	for name,value := range policiesTotal {
 		pdf.Br(brSize)
 
 		pdf.SetX(leftMargin)
@@ -193,57 +212,15 @@ func Render(output string, data *data.Report)  {
 			pdf.Cell(nil, "PASS")
 		}
 		pdf.SetTextColor(0, 0, 0)
-		checkEndOfPage( &pdf, 2*brSize)
+		// Image Assurance Checks
+		pdf.Br(brSize)
+
+		pdf.SetX(leftMargin)
+		pdf.Cell(nil, "Image Assurance Checks for " + name)
+		showImageAssuranceChecks(&pdf, policiesChecks[name])
+		pdf.Br(brSize)
+
 	}
-	pdf.Br(brSize)
-
-	// Image Assurance Checks
-	checks := data.MappingImageAssuranceChecks()
-	checkEndOfPage( &pdf, 2*brSize+2*cellHeight)
-	pdf.SetLineWidth(0.5)
-
-	pdf.SetX(leftMargin)
-	pdf.Cell(nil, "Image Assurance Checks")
-	showTable(&pdf, leftMargin, pdf.GetY()+brSize)
-	showTextIntoTable(&pdf, leftMargin, pdf.GetY()+brSize, &[2][5]string{
-		{"Approved Base Image","CVE Blacklist","Mallware","MicroEnforcer","OS Package Manager",},
-		{GetPassOrFailCheck(checks, "trusted_base_images"),
-			GetPassOrFailCheck(checks, "cve_blacklist"),
-			GetPassOrFailCheck(checks, "malware"),
-			GetPassOrFailCheck(checks, "force_microenforcer"),
-			GetPassOrFailCheck(checks, ""),},
-	})
-
-	///GetPassOrFailCheck(checks, "")
-	pdf.SetY( pdf.GetY()+ 2*brSize)
-	pdf.SetX(leftMargin)
-	checkEndOfPage( &pdf, brSize+2*cellHeight)
-
-	showTable(&pdf, leftMargin, pdf.GetY())
-	showTextIntoTable(&pdf, leftMargin, pdf.GetY(), &[2][5]string{
-		{"OSS License Blacklist","OSS License Whitelist","Package Blacklist","Required Packages","SCAP",},
-		{
-			GetPassOrFailCheck(checks, "license"),
-			GetPassOrFailCheck(checks, "whitelisted_licenses"),
-			GetPassOrFailCheck(checks, "blacklisted_packages"),
-			GetPassOrFailCheck(checks, "required_packages"),
-			GetPassOrFailCheck(checks, ""),},
-	})
-
-	pdf.SetY( pdf.GetY()+ 2*brSize)
-	pdf.SetX(leftMargin)
-	checkEndOfPage( &pdf, brSize+2*cellHeight)
-
-	showTable(&pdf, leftMargin, pdf.GetY())
-	showTextIntoTable(&pdf, leftMargin, pdf.GetY(), &[2][5]string{
-		{"Sensitive Data","Superuser","Ultrabox","Vulnerability Score","Vulnerability Severity",},
-		{
-			GetPassOrFailCheck(checks, "sensitive_data"),
-			GetPassOrFailCheck(checks, "root_user"),
-			GetPassOrFailCheck(checks, ""),
-			GetPassOrFailCheck(checks, "max_score"),
-			GetPassOrFailCheck(checks, "max_severity"),},
-	})
 
 	// Sensitive Data
 	pdf.Br(brSize*2)
@@ -404,19 +381,6 @@ func addVulnBlock( pdf *gopdf.GoPdf, vuln data.VulnerabilitiesResultType) {
 	addHr(pdf, pdf.GetY())
 }
 
-func GetPassOrFailCheck(m map[string]bool, key string) string  {
-	var result string
-	v, ok := m[key]
-	if ok {
-		if v {
-			result = "FAIL"
-		} else {
-			result = "PASS"
-		}
-	}
-	return result
-}
-
 func checkEndOfPage(pdf *gopdf.GoPdf, deltaY float64) {
 	if ( pdf.GetY() + deltaY ) > heightPage  {
 		pdf.AddPage()
@@ -494,32 +458,75 @@ func showColorfulTable(pdf *gopdf.GoPdf, yLeft float64)  {
 	pdf.RectFromUpperLeftWithStyle(leftMargin+4*cellWidth, yLeft+cellHeight, cellWidth, cellHeight, "FD")
 }
 
-func showTable(pdf *gopdf.GoPdf, xTop, yLeft float64) {
-	for i := 0; i < 5; i++ {
+func addCellOfTable(pdf *gopdf.GoPdf, xTop, yLeft float64) {
+	pdf.RectFromUpperLeftWithStyle(xTop, yLeft, cellWidth, cellHeight, "D")
+	pdf.RectFromUpperLeftWithStyle(xTop, yLeft+cellHeight, cellWidth, cellHeight, "D")
+}
+
+func showTable(pdf *gopdf.GoPdf, xTop, yLeft float64, rows int) {
+	for i := 0; i < rows; i++ {
 		delta := float64(i) * cellWidth
-		pdf.RectFromUpperLeftWithStyle(xTop+delta, yLeft, cellWidth, cellHeight, "D")
-		pdf.RectFromUpperLeftWithStyle(xTop+delta, yLeft+cellHeight, cellWidth, cellHeight, "D")
+		addCellOfTable( pdf, xTop+delta, yLeft)
 	}
 }
 
-func showTextIntoTable(pdf *gopdf.GoPdf, xTop, yLeft float64, text *[2][5]string) {
+func addTextToCellOfTable(pdf *gopdf.GoPdf, xTop, yLeft float64, text string) {
 	rect := gopdf.Rect{
 		W: cellWidth,
 		H: cellHeight,
 	}
+	pdf.SetX(xTop)
+	pdf.SetY(yLeft)
+
+	if text == "FAIL" {
+		pdf.SetTextColor(255,0,0)
+	}
+	if text == "PASS" {
+		pdf.SetTextColor(0,255,0)
+	}
+
+	pdf.CellWithOption(&rect, text, cellOption)
+	pdf.SetTextColor(0,0,0)
+
+}
+
+func showTextIntoTable(pdf *gopdf.GoPdf, xTop, yLeft float64, text *[2][5]string, row int) {
 	for i := 0; i <2; i++ {
 		deltaH := float64(i)*cellHeight
-		for j :=0; j < 5; j++ {
-			pdf.SetX(xTop + float64(j)*cellWidth)
-			pdf.SetY(yLeft + deltaH)
-			if text[i][j] == "FAIL" {
-				pdf.SetTextColor(255,0,0)
-			}
-			if text[i][j] == "PASS" {
-				pdf.SetTextColor(0,255,0)
-			}
-			pdf.CellWithOption(&rect, text[i][j], cellOption)
-			pdf.SetTextColor(0,0,0)
+		for j :=0; j < row; j++ {
+			addTextToCellOfTable( pdf, xTop + float64(j)*cellWidth, yLeft + deltaH, text[i][j] )
 		}
 	}
+}
+
+func showImageAssuranceChecks( pdf *gopdf.GoPdf, checksDa []data.CheckPerformedType)  {
+	var checks [2][5]string
+	var i int
+	for i=0;i < len(checksDa); {
+		description, ok := imageAssurance[ checksDa[i].Control ]
+		if ok {
+			checks[0][i%numberCellInRow] = description
+		}
+		if checksDa[i].Failed {
+			checks[1][i%numberCellInRow] = "FAIL"
+		} else {
+			checks[1][i%numberCellInRow] = "PASS"
+		}
+		i++
+		if i%numberCellInRow == 0 {
+			pdf.SetY( pdf.GetY()+ padding)
+			pdf.SetX(leftMargin)
+			checkEndOfPage( pdf, brSize+2*cellHeight)
+			showTable(pdf, leftMargin, pdf.GetY()+brSize, numberCellInRow)
+			showTextIntoTable(pdf, leftMargin, pdf.GetY()+brSize, &checks, numberCellInRow)
+		}
+	}
+	if i%numberCellInRow != 0 {
+		pdf.SetY( pdf.GetY()+ padding)
+		pdf.SetX(leftMargin)
+		checkEndOfPage( pdf, brSize+2*cellHeight)
+		showTable(pdf, leftMargin, pdf.GetY()+brSize, i%numberCellInRow)
+		showTextIntoTable(pdf, leftMargin, pdf.GetY()+brSize, &checks, i%numberCellInRow)
+	}
+
 }
