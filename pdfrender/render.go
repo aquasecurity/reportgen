@@ -120,16 +120,9 @@ func Render(output string, data *data.Report)  {
 	pdf.Cell(nil, "Summary")
 	pdf.Br(brSize)
 
-	pdf.SetY(pdf.GetY()+padding)
-	pdf.SetX(leftMargin)
-	pdf.SetFont(fontType, "", 10)
-	pdf.SetX(leftMargin)
-	pdf.Cell(nil, "This section contains the image summary")
-	pdf.SetY(pdf.GetY()+15)
-
-	// Block after Summary
+	// Block Summary
 	yLine2 := pdf.GetY()+padding
-	summaryBlochHeight := 110.0
+	summaryBlochHeight := 125.0
 	pdf.SetX(leftMargin)
 	pdf.SetY(yLine2)
 	addHr(&pdf, yLine2)
@@ -138,10 +131,10 @@ func Render(output string, data *data.Report)  {
 	pdf.RectFromUpperLeftWithStyle(leftMargin, yLine2, width, summaryBlochHeight, "F")
 	pdf.SetY(yLine2+padding)
 	pdf.SetX(leftMargin+padding)
-	pdf.SetFont(fontTypeBold, "", 10)
+	pdf.SetFont(fontTypeBold, "", 12)
 	pdf.Cell(nil, "Image name \"" + data.General.ImageName+"\"")
 	pdf.Br(brSize)
-	pdf.SetFont(fontType, "", 8)
+	pdf.SetFont(fontType, "", 10)
 
 	opt := gopdf.CellOption{
 		Align:  gopdf.Right,
@@ -156,7 +149,7 @@ func Render(output string, data *data.Report)  {
 
 	pdf.Br(brSize)
 	pdf.SetX(leftMargin+padding)
-	pdf.SetFont(fontTypeBold, "", 8)
+	pdf.SetFont(fontTypeBold, "", 10)
 	pdf.Cell(nil, "Registry: " + data.General.Registry)
 
 	pdf.Br(brSize)
@@ -168,14 +161,26 @@ func Render(output string, data *data.Report)  {
 	pdf.SetX(leftMargin+padding)
 	pdf.Cell(nil, "OS: " + data.General.Os + "(" + data.General.OsVersion+ ")")
 
+	pdf.Br(brSize)
+	pdf.SetX(leftMargin+padding)
+	scanDate, _ := time.Parse("2006-01-02T15:04:05.999999999Z07:00", data.General.ScanDate)
+	pdf.Cell(nil, "Scan date: " + scanDate.Format(dateFormat) )
+
 	// after Image Name block
 	pdf.SetX(leftMargin)
 	pdf.SetY(yLine2 + summaryBlochHeight + 2*padding)
-	pdf.SetFont(fontTypeBold, "", 10)
-	var imageAllowed string
-	if data.General.AssuranceResults.Disallowed {imageAllowed = "Disallowed"} else {imageAllowed="Allowed"}
+	pdf.SetFont(fontTypeBold, "", 12)
 
-	pdf.Cell(nil, "Image is " + imageAllowed)
+	pdf.Cell(nil, "Image is ")
+	if data.General.AssuranceResults.Disallowed {
+		pdf.SetTextColor(255,151,47)
+		pdf.Cell(nil, "Non-Compliant")
+	} else {
+		pdf.SetTextColor(0,255,0)
+		pdf.Cell(nil, "Compliant")
+	}
+	pdf.SetTextColor(0,0,0)
+
 	// Block Number of Vulnerabilities
 	pdf.Br(brSize*1.5)
 	pdf.SetX(leftMargin)
@@ -185,6 +190,7 @@ func Render(output string, data *data.Report)  {
 	pdf.SetStrokeColor(0, 0, 0)
 	pdf.SetLineWidth(0.5)
 
+	pdf.SetFont(fontTypeBold, "", 10)
 	showColorfulTable(&pdf, yTable1)
 	showTextInto5thColumnsTable(&pdf, leftMargin, yTable1, &[2][5]string{
 		{"CRITICAL","HIGH","MEDIUM","LOW","NEGLIGIBLE",},
@@ -194,7 +200,9 @@ func Render(output string, data *data.Report)  {
 	// Image Assurance Policies
 	pdf.SetY(yTable1 + cellHeight*2+ brSize)
 	pdf.SetX(leftMargin)
+	pdf.SetFont(fontTypeBold, "", 12)
 	pdf.Cell(nil, "Image Assurance Policies")
+	pdf.SetFont(fontTypeBold, "", 10)
 
 	policiesTotal, policiesChecks := data.GetImageAssurancePolicies()
 
@@ -226,7 +234,7 @@ func Render(output string, data *data.Report)  {
 	checkEndOfPage( &pdf, brSize+80)
 	pdf.SetX(leftMargin)
 
-	pdf.SetFont(fontTypeBold, "", 10)
+	pdf.SetFont(fontTypeBold, "", 12)
 	pdf.Cell(nil, "Sensitive Data")
 	pdf.Br(brSize)
 	pdf.SetX(leftMargin)
@@ -242,6 +250,7 @@ func Render(output string, data *data.Report)  {
 			checkEndOfPage( &pdf, brSize+60)
 		}
 	} else {
+		pdf.SetFont(fontType, "", 10)
 		pdf.Cell(nil, "None found.")
 	}
 
@@ -250,7 +259,7 @@ func Render(output string, data *data.Report)  {
 	//Malware
 	checkEndOfPage( &pdf, 100)
 	pdf.SetX(leftMargin)
-	pdf.SetFont(fontTypeBold, "", 10)
+	pdf.SetFont(fontTypeBold, "", 12)
 	pdf.Cell(nil, "Malware")
 	pdf.Br(brSize)
 	pdf.SetX(leftMargin)
@@ -272,6 +281,7 @@ func Render(output string, data *data.Report)  {
 			checkEndOfPage( &pdf, brSize+45)
 		}
 	} else {
+		pdf.SetFont(fontType, "", 10)
 		pdf.Cell(nil, "None found")
 	}
 
@@ -322,11 +332,8 @@ func addVulnBlock( pdf *gopdf.GoPdf, vuln data.VulnerabilitiesResultType) {
 	pdf.SetY( pdf.GetY()+greyBlockH)
 
 	pdf.Br(brSize)
-
-
 	tableCellH := 16.0
 	tableCellW := 155.0
-
 	checkEndOfPage( pdf, tableCellH*2+3*brSize+30)
 	addHrGrey( pdf, pdf.GetY())
 
@@ -339,26 +346,48 @@ func addVulnBlock( pdf *gopdf.GoPdf, vuln data.VulnerabilitiesResultType) {
 	pdf.SetTextColor(124, 151, 182)
 	addCell( pdf, pdf.GetX(), pdf.GetY(), tableCellW, tableCellH, "Resource")
 	addCell( pdf, pdf.GetX(), pdf.GetY(), tableCellW, tableCellH, "Full Resource Name")
-	addCell( pdf, pdf.GetX(), pdf.GetY(), tableCellW, tableCellH, "Fixed Version")
+	addCell( pdf, pdf.GetX(), pdf.GetY(), tableCellW, tableCellH, "Fix Version")
 
 	pdf.SetY(pdf.GetY()+tableCellH)
 	pdf.SetX(leftMargin)
 	pdf.SetTextColor(0,0,0)
-	addCell( pdf, pdf.GetX(), pdf.GetY(), tableCellW, tableCellH, vuln.Resource.Name)
-	addCell( pdf, pdf.GetX(), pdf.GetY(), tableCellW, tableCellH, vuln.Resource.Version)
-	addCell( pdf, pdf.GetX(), pdf.GetY(), tableCellW, tableCellH, vuln.FixVersion)
+	var name, version, fixVersion string
+	if vuln.Resource.Name != "" {
+		name = vuln.Resource.Name
+	} else {
+		name = "No name"
+	}
 
-	pdf.Br(brSize)
+	if vuln.Resource.Version != "" {
+		version = vuln.Resource.Version
+	} else {
+		version = "No version"
+	}
+
+	if vuln.FixVersion != "" {
+		fixVersion = vuln.FixVersion
+	} else {
+		fixVersion = "no fix"
+	}
+	addCell( pdf, pdf.GetX(), pdf.GetY(), tableCellW, tableCellH, name)
+	addCell( pdf, pdf.GetX(), pdf.GetY(), tableCellW, tableCellH, version)
+	addCell( pdf, pdf.GetX(), pdf.GetY(), tableCellW, tableCellH, fixVersion )
+
+	pdf.Br(brSize*1.3)
 	pdf.SetX(leftMargin)
 	pdf.SetTextColor(124, 151, 182)
 	pdf.Cell(nil, "Solution:")
-	pdf.Br(brSize)
+	pdf.Br(brSize*0.8)
 	pdf.SetX(leftMargin)
 	pdf.SetTextColor(0,0,0)
-	pdf.Cell(nil, vuln.Solution)
 
-	pdf.Br(brSize)
-
+	if vuln.Solution != "" {
+		multilineSolution,_ := pdf.SplitText(vuln.Solution, width)
+		addMultiLines( pdf, leftMargin, 12, multilineSolution )
+	} else {
+		pdf.Cell(nil, "none")
+	}
+	pdf.Br(brSize*0.5)
 	checkEndOfPage( pdf, heightPage/6)
 	addHrGrey( pdf, pdf.GetY())
 

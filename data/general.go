@@ -25,6 +25,7 @@ type GeneralType struct {
 	Medium int `json:"med_vulns"`
 	Low int `json:"low_vulns"`
 	Negligible int `json:"neg_vulns"`
+	ScanDate string `json:"scan_date"`
 	
 	AssuranceResults AssuranceResultsType `json:"assurance_results"`
 }
