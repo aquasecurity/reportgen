@@ -3,6 +3,7 @@ package data
 type CheckPerformedType struct {
 	PolicyName string `json:"policy_name"`
 	Failed bool `json:"failed"`
+	Control string `json:"control"`
 }
 
 type AssuranceResultsType struct {

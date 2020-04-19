@@ -13,9 +13,9 @@ import (
 
 const (
 	api_url = "api/v2/images/"
-	vulnerabiliti = "/vulnerabilities"
-	sensitive = "/sensitive"
-	malware = "/malware"
+	vulnerabiliti_url = "/vulnerabilities"
+	sensitive_url = "/sensitive"
+	malware_url = "/malware"
 )
 
 var (
@@ -41,23 +41,32 @@ func GetData(server, user, password, registry, image string ) *data.Report {
 
 	result := new(data.Report)
 	result.General = new(data.GeneralType)
+	result.Sensitive = new(data.SensitiveType)
+	result.Malware = new(data.MalwareType)
+	result.Vulnerabilities = new(data.VulnerabilitiesType)
 
 	general := getData(urlBase, user, password)
-
 	if err := json.Unmarshal(general, result.General); err != nil {
 		fmt.Println("Can't parse response from server (general):", string(general))
 		os.Exit(1)
 	}
 
-/*
+	sensitive := getData(urlBase+sensitive_url, user, password)
+	if err := json.Unmarshal(sensitive, result.Sensitive); err != nil {
+		fmt.Println("Can't parse response from server (sensitive):", string(sensitive))
+		os.Exit(1)
+	}
 
-	fmt.Println(string(general))
+
+
+//	fmt.Println(string(general))
+	fmt.Println("===============================================================")
+	fmt.Println("sensitive: ")
+//	fmt.Println(string(sensitive))
+	/*
 	fmt.Println("===============================================================")
 	fmt.Println("vulnerabiliti:")
 	fmt.Println(string(getData(urlBase+vulnerabiliti, user, password)))
-	fmt.Println("===============================================================")
-	fmt.Println("sensitive: ")
-	fmt.Println(string(getData(urlBase+sensitive, user, password)))
 	fmt.Println("===============================================================")
 	fmt.Println("malware:")
 	fmt.Println(string(getData(urlBase+malware, user, password)))
