@@ -87,13 +87,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Println("Debug info:")
-	fmt.Println("Server:", serverUrl)
-	fmt.Println("Registry:", registryName)
-	fmt.Println("Image:", imageName)
-	fmt.Println("User:", user)
-	fmt.Println("Password:", password)
-
 	var filename string
 	if !strings.HasSuffix(output, ".pdf") {
 		filename = output + ".pdf"

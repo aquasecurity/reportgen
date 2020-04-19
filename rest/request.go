@@ -63,19 +63,10 @@ func GetData(server, user, password, registry, image string ) *data.Report {
 		os.Exit(1)
 	}
 
-//	fmt.Println(string(general))
-	fmt.Println("===============================================================")
-	fmt.Println("sensitive: ")
-//	fmt.Println(string(sensitive))
-	fmt.Println("===============================================================")
-	fmt.Println("malware:")
-//	fmt.Println(string(malware))
-	fmt.Println("===============================================================")
-	/*
-	fmt.Println("vulnerabiliti:")
-	fmt.Println(string(getData(urlBase+vulnerabiliti, user, password)))
-	fmt.Println("===============================================================")
-*/
+	vulnerabiliti := getData(urlBase+vulnerabiliti_url, user, password)
+	if err := json.Unmarshal(vulnerabiliti, result.Vulnerabilities); err != nil {
+		fmt.Println("Can't parse response from server (vulnerabiliti):")//, string(vulnerabiliti))
+		os.Exit(1)
+	}
 	return result
-
 }

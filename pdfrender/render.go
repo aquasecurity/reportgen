@@ -27,6 +27,9 @@ const (
 	longPath = "./pdfrender/logo.png"
 
 	dateFormat = "2006-01-02 15:04"
+
+	fontType = "calibri"
+	fontTypeBold = "calibri-bold"
 )
 
 var cellOption = gopdf.CellOption{
@@ -37,9 +40,6 @@ var cellOption = gopdf.CellOption{
 
 func Render(output string, data *data.Report)  {
 	currentDate := time.Now().Format(dateFormat)
-
-	fontType := "calibri"
-	fontTypeBold := "calibri-bold"
 
 	pdf := gopdf.GoPdf{}
 	pdf.Start(gopdf.Config{ PageSize: *gopdf.PageSizeA4 }) //595.28, 841.89 = A4
@@ -254,11 +254,14 @@ func Render(output string, data *data.Report)  {
 
 	pdf.SetFont(fontType, "", 9)
 	for _, result := range data.Sensitive.Results {
-		addCell( &pdf, leftMargin, pdf.GetY(), width, 15, result.Type)
+		addCell( &pdf, leftMargin, pdf.GetY(), width, 15, "Type:")
+		addCell( &pdf, leftMargin, pdf.GetY()+15, width, 15, result.Type)
+		addCell( &pdf, leftMargin, pdf.GetY()+15, width, 15, "Path:")
 		addCell( &pdf, leftMargin, pdf.GetY()+15, width, 15, result.Path)
 		pdf.Br(brSize)
-		checkEndOfPage( &pdf, brSize+30)
+		checkEndOfPage( &pdf, brSize+60)
 	}
+	pdf.Br(brSize)
 
 	//Malware
 	checkEndOfPage( &pdf, 100)
@@ -283,10 +286,9 @@ func Render(output string, data *data.Report)  {
 	}
 
 	pdf.Br(brSize)
+
+	checkEndOfPage( &pdf, heightPage/2)
 	addHr(&pdf, pdf.GetY())
-
-	checkEndOfPage( &pdf, heightPage)
-
 	// line
 	pdf.Br(brSize)
 	pdf.SetX(leftMargin)
@@ -297,78 +299,94 @@ func Render(output string, data *data.Report)  {
 	pdf.SetX(leftMargin)
 	pdf.SetFont(fontType, "", 10)
 	pdf.Cell(nil, "This section contains the findings in more detail, ordered by severity")
-	pdf.Br(brSize)
 
+	for _, vuln := range data.Vulnerabilities.Results {
+		addVulnBlock( &pdf, vuln)
+	}
+
+	pdf.WritePdf(output)
+}
+
+func addVulnBlock( pdf *gopdf.GoPdf, vuln data.VulnerabilitiesResultType) {
 	greyBlockH := padding*2.0+13.0
+
+	checkEndOfPage( pdf, 2*greyBlockH + 2*brSize )
+
+	pdf.Br(brSize)
 	pdf.SetFont(fontType, "", 11)
 	pdf.SetFillColor(236, 239, 241)
-	addBlock( &pdf, leftMargin, pdf.GetY(), 200.0, greyBlockH, cveNumber)
+	addBlock( pdf, leftMargin, pdf.GetY(), 200.0, greyBlockH, vuln.Name)
 	pdf.SetY( pdf.GetY()+greyBlockH)
 
 	pdf.Br(brSize)
 	negligbleBlockW := 100.0
 	pdf.SetFillColor(200, 236, 252)
 	pdf.SetTextColor(0,117, 191)
-	addBlock( &pdf, leftMargin, pdf.GetY(), negligbleBlockW, greyBlockH, negligible)
+	addBlock( pdf, leftMargin, pdf.GetY(), negligbleBlockW, greyBlockH, vuln.AquaSeverity)
 
 	pdf.SetTextColor(0,0,0)
 	pdf.SetFillColor(236, 239, 241)
-	addBlock( &pdf, leftMargin+negligbleBlockW+padding*2, pdf.GetY(), 150.0, greyBlockH, cvssScrore)
+	addBlock( pdf, leftMargin+negligbleBlockW+padding*2, pdf.GetY(), 150.0, greyBlockH,
+		strconv.FormatFloat(vuln.AquaScore, 'f', 2, 64))
 
 	pdf.SetY( pdf.GetY()+greyBlockH)
 
 	pdf.Br(brSize)
-	addHrGrey( &pdf, pdf.GetY())
+
+
+	tableCellH := 16.0
+	tableCellW := 155.0
+
+	checkEndOfPage( pdf, tableCellH*2+3*brSize+30)
+	addHrGrey( pdf, pdf.GetY())
 
 	//-- table
 	pdf.Br(brSize)
 	pdf.SetX(leftMargin)
-	tableCellH := 16.0
-	tableCellW := 155.0
 
 	pdf.SetLineWidth(0.5)
 	pdf.SetStrokeColor(0,0,0)
 	pdf.SetTextColor(124, 151, 182)
-	addCell( &pdf, pdf.GetX(), pdf.GetY(), tableCellW, tableCellH, "Resource")
-	addCell( &pdf, pdf.GetX(), pdf.GetY(), tableCellW, tableCellH, "Full Resource Name")
-	addCell( &pdf, pdf.GetX(), pdf.GetY(), tableCellW, tableCellH, "Fixed Version")
+	addCell( pdf, pdf.GetX(), pdf.GetY(), tableCellW, tableCellH, "Resource")
+	addCell( pdf, pdf.GetX(), pdf.GetY(), tableCellW, tableCellH, "Full Resource Name")
+	addCell( pdf, pdf.GetX(), pdf.GetY(), tableCellW, tableCellH, "Fixed Version")
 
 	pdf.SetY(pdf.GetY()+tableCellH)
 	pdf.SetX(leftMargin)
 	pdf.SetTextColor(0,0,0)
-	addCell( &pdf, pdf.GetX(), pdf.GetY(), tableCellW, tableCellH, resource)
-	addCell( &pdf, pdf.GetX(), pdf.GetY(), tableCellW, tableCellH, resourceFullName)
-	addCell( &pdf, pdf.GetX(), pdf.GetY(), tableCellW, tableCellH, fixedVersion)
+	addCell( pdf, pdf.GetX(), pdf.GetY(), tableCellW, tableCellH, vuln.Resource.Name)
+	addCell( pdf, pdf.GetX(), pdf.GetY(), tableCellW, tableCellH, vuln.Resource.Version)
+	addCell( pdf, pdf.GetX(), pdf.GetY(), tableCellW, tableCellH, vuln.FixVersion)
 
-	pdf.Br(brSize*2)
+	pdf.Br(brSize)
 	pdf.SetX(leftMargin)
 	pdf.SetTextColor(124, 151, 182)
 	pdf.Cell(nil, "Solution:")
 	pdf.Br(brSize)
 	pdf.SetX(leftMargin)
 	pdf.SetTextColor(0,0,0)
-	pdf.Cell(nil, solution)
+	pdf.Cell(nil, vuln.Solution)
 
 	pdf.Br(brSize)
-	addHrGrey( &pdf, pdf.GetY())
 
-	//--- Third page
-	pdf.AddPage()
+	checkEndOfPage( pdf, heightPage/6)
+	addHrGrey( pdf, pdf.GetY())
+
+	pdf.Br(brSize)
 	pdf.SetX(leftMargin)
-	pdf.SetY(topMargin)
 	pdf.SetFont(fontTypeBold, "", 10)
 	pdf.Cell(nil, "VULNERABILITY DESCRIPTION")
 	pdf.Br(brSize)
 	pdf.SetFont(fontType, "", 10)
 
-	multilinesVulnDescription,_ := pdf.SplitText(vulnDescription, width-2*padding)
+	multilinesVulnDescription,_ := pdf.SplitText(vuln.Description, width-2*padding)
 	hBlockVulnDescription := len(multilinesVulnDescription)*14+padding*2
 	pdf.SetFillColor(246,249,250)
 	pdf.RectFromUpperLeftWithStyle(leftMargin, pdf.GetY(), width, float64(hBlockVulnDescription), "F")
 	pdf.Br(padding)
-	addMultiLines( &pdf,leftMargin+padding, 15, multilinesVulnDescription )
-
-	pdf.WritePdf(output)
+	addMultiLines( pdf,leftMargin+padding, 15, multilinesVulnDescription )
+	pdf.Br(brSize)
+	addHr(pdf, pdf.GetY())
 }
 
 func GetPassOrFailCheck(m map[string]bool, key string) string  {
@@ -388,6 +406,7 @@ func checkEndOfPage(pdf *gopdf.GoPdf, deltaY float64) {
 	if ( pdf.GetY() + deltaY ) > heightPage  {
 		pdf.AddPage()
 		pdf.SetY( topMargin)
+		pdf.SetLineWidth(0.5)
 	}
 }
 
