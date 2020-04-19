@@ -52,7 +52,14 @@ func GetData(server, user, password, registry, image string ) *data.Report {
 		slash = "/"
 	}
 
-	urlBase := server + slash+ api_url + registry + "/" + image
+	var correctImage string
+	if strings.Contains(image, ":") {
+		correctImage = strings.ReplaceAll(image, ":", "/")
+	} else {
+		correctImage = image
+	}
+
+	urlBase := server + slash+ api_url + registry + "/" + correctImage
 
 	result := new(data.Report)
 	result.General = new(data.GeneralType)
