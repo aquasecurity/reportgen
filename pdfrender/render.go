@@ -267,8 +267,20 @@ func Render(output string, data *data.Report)  {
 	pdf.Cell(nil, "Malware")
 	pdf.Br(brSize)
 
-	listDataMalware,_ := pdf.SplitText(malwareListData, width)
-	addMultiLines( &pdf, leftMargin, 15, listDataMalware)
+	pdf.SetFont(fontType, "", 9)
+	malwareTitleWidth := 40.0
+	for _, result := range data.Malware.Results {
+		addCell( &pdf, leftMargin, pdf.GetY(), malwareTitleWidth, 15, "Malware")
+		addCell( &pdf, leftMargin+malwareTitleWidth+padding, pdf.GetY(), width-malwareTitleWidth-2*padding, 15, result.Malware)
+
+		addCell( &pdf, leftMargin, pdf.GetY()+15, malwareTitleWidth, 15, "Path")
+		addCell( &pdf, leftMargin+malwareTitleWidth+padding, pdf.GetY(), width-malwareTitleWidth-2*padding, 15, result.Path)
+
+		addCell( &pdf, leftMargin, pdf.GetY()+15, malwareTitleWidth, 15, "Hash")
+		addCell( &pdf, leftMargin+malwareTitleWidth+padding, pdf.GetY(), width-malwareTitleWidth-2*padding, 15, result.Hash)
+		pdf.Br(brSize)
+		checkEndOfPage( &pdf, brSize+45)
+	}
 
 	pdf.Br(brSize)
 	addHr(&pdf, pdf.GetY())
