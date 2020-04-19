@@ -27,23 +27,4 @@ type GeneralType struct {
 	Negligible int `json:"neg_vulns"`
 	
 	AssuranceResults AssuranceResultsType `json:"assurance_results"`
-
-
-	/*
-	"":13,
-	"":80,
-	"":125,
-	"":13,
-	"":2,
-
-
-	"created":"2019-06-12T14:22:51.717668Z",
-	"os":"alpine",
-	"os_version":"3.3.3",
-	
-	"registry":"Docker Hub",
-	"name":"alpine:3.3",
-	"malware":0,
-
-	 */
 }
