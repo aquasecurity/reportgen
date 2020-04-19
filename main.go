@@ -94,8 +94,6 @@ func main() {
 	fmt.Println("User:", user)
 	fmt.Println("Password:", password)
 
-
-
 	var filename string
 	if !strings.HasSuffix(output, ".pdf") {
 		filename = output + ".pdf"
@@ -103,7 +101,7 @@ func main() {
 		filename = output
 	}
 	data := rest.GetData(serverUrl, user, password, registryName, imageName)
-	data.Server = serverUrl
+	data.ServerUrl = serverUrl
 	pdfrender.Render(filename, data)
 	fmt.Println("Report was written to", filename)
 }

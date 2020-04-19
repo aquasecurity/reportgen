@@ -9,11 +9,11 @@ var (
 	//imageOs = "[Image OS]"
 	//imageAllowed = "[[Allowed/Disallowed]]"
 
-	countCritical = "[count of critical]"
-	countHigh = "[count of high]"
-	countMedium = "[count of medium]"
-	countLow = "[count of low]"
-	countNegligible = "[count of negligible]"
+//	countCritical = "[count of critical]"
+//	countHigh = "[count of high]"
+	//countMedium = "[count of medium]"
+	//countLow = "[count of low]"
+	//countNegligible = "[count of negligible]"
 
 	passFail = "[PASS/FAIL]"
 

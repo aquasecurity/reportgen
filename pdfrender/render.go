@@ -4,6 +4,7 @@ import (
 	"../data"
 	"github.com/signintech/gopdf"
 	"log"
+	"strconv"
 	"time"
 )
 
@@ -74,7 +75,11 @@ func Render(output string, data *data.Report)  {
 	pdf.SetY(yTitleBase + 3*padding+15)
 	pdf.SetTextColor(0,0,0)
 	pdf.SetFont(fontType, "", 10)
-	pdf.Cell(nil, "Aqua Server – " + data.Server)
+	pdf.Cell(nil, "Aqua Server – ")
+	linkXBegin := pdf.GetX()
+	pdf.Cell(nil, data.ServerUrl)
+	linkXEnd := pdf.GetX()
+	pdf.AddExternalLink(data.ServerUrl, linkXBegin, pdf.GetY(), linkXEnd-linkXBegin, 15)
 
 	// line after 1
 	yLine1 := pdf.GetY()+ 2* padding
@@ -113,7 +118,7 @@ func Render(output string, data *data.Report)  {
 	pdf.SetY(yLine2+padding)
 	pdf.SetX(leftMargin+padding)
 	pdf.SetFont(fontTypeBold, "", 10)
-	pdf.Cell(nil, "Image name \"" + data.ImageName+"\"")
+	pdf.Cell(nil, "Image name \"" + data.General.ImageName+"\"")
 	pdf.Br(brSize)
 	pdf.SetFont(fontType, "", 8)
 
@@ -131,22 +136,23 @@ func Render(output string, data *data.Report)  {
 	pdf.Br(brSize)
 	pdf.SetX(leftMargin+padding)
 	pdf.SetFont(fontTypeBold, "", 8)
-	pdf.Cell(nil, "Registry: " + data.Registry)
+	pdf.Cell(nil, "Registry: " + data.General.Registry)
 
 	pdf.Br(brSize)
 	pdf.SetX(leftMargin+padding)
-	pdf.Cell(nil, "Image Creation Date: " + data.Created.Format(dateFormat))
+	timeCreated,_ := time.Parse("2006-01-02T15:04:05.999999999Z07:00",data.General.Created)
+	pdf.Cell(nil, "Image Creation Date: " + timeCreated.Format(dateFormat))
 
 	pdf.Br(brSize)
 	pdf.SetX(leftMargin+padding)
-	pdf.Cell(nil, "OS: " + data.Os + "(" + data.OsVersion+ ")")
+	pdf.Cell(nil, "OS: " + data.General.Os + "(" + data.General.OsVersion+ ")")
 
 	// after Image Name block
 	pdf.SetX(leftMargin)
 	pdf.SetY(yLine2 + summaryBlochHeight + 2*padding)
 	pdf.SetFont(fontTypeBold, "", 10)
 	var imageAllowed string
-	if data.ImageAllowed {imageAllowed = "Allowed"} else {imageAllowed="Disallowed"}
+	if data.General.AssuranceResults.Disallowed {imageAllowed = "Disallowed"} else {imageAllowed="Allowed"}
 
 	pdf.Cell(nil, "Image is " + imageAllowed)
 	// Block Number of Vulnerabilities
@@ -161,14 +167,35 @@ func Render(output string, data *data.Report)  {
 
 	showTextIntoTable(&pdf, leftMargin, yTable1, &[2][5]string{
 		{"CRITICAL","HIGH","MEDIUM","LOW","NEGLIGIBLE",},
-		{countCritical,countHigh,countMedium,countLow,countNegligible,},
+		{strconv.Itoa( data.General.Critical), strconv.Itoa(data.General.High),strconv.Itoa(data.General.Medium),strconv.Itoa(data.General.Low),strconv.Itoa(data.General.Negligible),},
 	})
 
-	// Image Assurance Checks
+	// Image Assurance Policies
 	pdf.SetY(yTable1 + cellHeight*2+ brSize)
 	pdf.SetX(leftMargin)
-	pdf.Cell(nil, "Image Assurance Checks")
+	pdf.Cell(nil, "Image Assurance Policies")
 
+	for _,v := range data.General.AssuranceResults.ChecksPerformed {
+		pdf.Br(brSize)
+		pdf.SetX(leftMargin)
+		pdf.Cell(nil, "Policy \"" + v.PolicyName + "\": ")
+		if v.Failed {
+			pdf.SetTextColor(255, 0, 0)
+			pdf.Cell(nil, "FAILED")
+		} else {
+			pdf.SetTextColor(0, 255, 0)
+			pdf.Cell(nil, "PASS")
+		}
+		pdf.SetTextColor(0, 0, 0)
+	}
+
+	pdf.AddPage()
+	pdf.SetY(topMargin)
+
+
+	// Image Assurance Checks
+	pdf.SetX(leftMargin)
+	pdf.Cell(nil, "Image Assurance Checks")
 	showTable(&pdf, leftMargin, pdf.GetY()+brSize)
 	showTextIntoTable(&pdf, leftMargin, pdf.GetY()+brSize, &[2][5]string{
 		{"Approved Base Image","CVE Blacklist","Mallware","MicroEnforcer","OS Package Manager",},

@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"os"
 	"sync"
-	"time"
 )
 
 const (
@@ -37,36 +36,22 @@ func getData(url, user, password string) []byte  {
 	return bodyText
 }
 
-func buildReportData( general *data.General  ) *data.Report  {
-	result := new(data.Report)
-	result.ImageName = general.Name
-	result.Registry = general.Registry
-	result.Os = general.Os
-	result.OsVersion = general.OsVersion
-	result.ImageAllowed = general.Disallowed
-	var err error
-	result.Created, err = time.Parse("2006-01-02T15:04:05.000000Z", general.Created)
-	if err != nil {
-		fmt.Println(err.Error)
-	}
-
-	return result
-}
-
 func GetData(server, user, password, registry, image string ) *data.Report {
 	urlBase := server + api_url + registry + "/" + image
 
-	var general data.General
-	generalData := getData(urlBase, user, password)
+	result := new(data.Report)
+	result.General = new(data.GeneralType)
 
-	if err := json.Unmarshal(generalData, &general); err != nil {
-		fmt.Println("Can't parse response from server (general):", string(generalData))
+	general := getData(urlBase, user, password)
+
+	if err := json.Unmarshal(general, result.General); err != nil {
+		fmt.Println("Can't parse response from server (general):", string(general))
 		os.Exit(1)
 	}
 
+/*
 
-
-//	fmt.Println(string())
+	fmt.Println(string(general))
 	fmt.Println("===============================================================")
 	fmt.Println("vulnerabiliti:")
 	fmt.Println(string(getData(urlBase+vulnerabiliti, user, password)))
@@ -77,7 +62,7 @@ func GetData(server, user, password, registry, image string ) *data.Report {
 	fmt.Println("malware:")
 	fmt.Println(string(getData(urlBase+malware, user, password)))
 	fmt.Println("===============================================================")
-
-	return buildReportData(&general)
+*/
+	return result
 
 }
