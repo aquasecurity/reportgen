@@ -184,13 +184,12 @@ func Render(output string, data *data.Report)  {
 	yTable1 := pdf.GetY()
 	pdf.SetStrokeColor(0, 0, 0)
 	pdf.SetLineWidth(0.5)
+
 	showColorfulTable(&pdf, yTable1)
-
-
-	showTextIntoTable(&pdf, leftMargin, yTable1, &[2][5]string{
+	showTextInto5thColumnsTable(&pdf, leftMargin, yTable1, &[2][5]string{
 		{"CRITICAL","HIGH","MEDIUM","LOW","NEGLIGIBLE",},
 		{strconv.Itoa( data.General.Critical), strconv.Itoa(data.General.High),strconv.Itoa(data.General.Medium),strconv.Itoa(data.General.Low),strconv.Itoa(data.General.Negligible),},
-	}, 5)
+	})
 
 	// Image Assurance Policies
 	pdf.SetY(yTable1 + cellHeight*2+ brSize)
@@ -437,25 +436,26 @@ func addHr(pdf *gopdf.GoPdf, yLeft float64) {
 }
 
 func showColorfulTable(pdf *gopdf.GoPdf, yLeft float64)  {
+	localCellWidth := width/5.0
 	pdf.SetFillColor(192,0,0)
-	pdf.RectFromUpperLeftWithStyle(leftMargin, yLeft, cellWidth, cellHeight, "FD")
-	pdf.RectFromUpperLeftWithStyle(leftMargin, yLeft+cellHeight, cellWidth, cellHeight, "FD")
+	pdf.RectFromUpperLeftWithStyle(leftMargin, yLeft, localCellWidth, cellHeight, "FD")
+	pdf.RectFromUpperLeftWithStyle(leftMargin, yLeft+cellHeight, localCellWidth, cellHeight, "FD")
 
 	pdf.SetFillColor(255,0,0)
-	pdf.RectFromUpperLeftWithStyle(leftMargin+cellWidth, yLeft, cellWidth, cellHeight, "FD")
-	pdf.RectFromUpperLeftWithStyle(leftMargin+cellWidth, yLeft+cellHeight, cellWidth, cellHeight, "FD")
+	pdf.RectFromUpperLeftWithStyle(leftMargin+localCellWidth, yLeft, localCellWidth, cellHeight, "FD")
+	pdf.RectFromUpperLeftWithStyle(leftMargin+localCellWidth, yLeft+cellHeight, localCellWidth, cellHeight, "FD")
 
 	pdf.SetFillColor(255,192,0)
-	pdf.RectFromUpperLeftWithStyle(leftMargin+2*cellWidth, yLeft, cellWidth, cellHeight, "FD")
-	pdf.RectFromUpperLeftWithStyle(leftMargin+2*cellWidth, yLeft+cellHeight, cellWidth, cellHeight, "FD")
+	pdf.RectFromUpperLeftWithStyle(leftMargin+2*localCellWidth, yLeft, localCellWidth, cellHeight, "FD")
+	pdf.RectFromUpperLeftWithStyle(leftMargin+2*localCellWidth, yLeft+cellHeight, localCellWidth, cellHeight, "FD")
 
 	pdf.SetFillColor(255,255,0)
-	pdf.RectFromUpperLeftWithStyle(leftMargin+3*cellWidth, yLeft, cellWidth, cellHeight, "FD")
-	pdf.RectFromUpperLeftWithStyle(leftMargin+3*cellWidth, yLeft+cellHeight, cellWidth, cellHeight, "FD")
+	pdf.RectFromUpperLeftWithStyle(leftMargin+3*localCellWidth, yLeft, localCellWidth, cellHeight, "FD")
+	pdf.RectFromUpperLeftWithStyle(leftMargin+3*localCellWidth, yLeft+cellHeight, localCellWidth, cellHeight, "FD")
 
 	pdf.SetFillColor(0,112,192)
-	pdf.RectFromUpperLeftWithStyle(leftMargin+4*cellWidth, yLeft, cellWidth, cellHeight, "FD")
-	pdf.RectFromUpperLeftWithStyle(leftMargin+4*cellWidth, yLeft+cellHeight, cellWidth, cellHeight, "FD")
+	pdf.RectFromUpperLeftWithStyle(leftMargin+4*localCellWidth, yLeft, localCellWidth, cellHeight, "FD")
+	pdf.RectFromUpperLeftWithStyle(leftMargin+4*localCellWidth, yLeft+cellHeight, localCellWidth, cellHeight, "FD")
 }
 
 func addCellOfTable(pdf *gopdf.GoPdf, xTop, yLeft float64) {
@@ -470,9 +470,9 @@ func showTable(pdf *gopdf.GoPdf, xTop, yLeft float64, rows int) {
 	}
 }
 
-func addTextToCellOfTable(pdf *gopdf.GoPdf, xTop, yLeft float64, text string) {
+func addTextToCellOfTable(pdf *gopdf.GoPdf, xTop, yLeft, width float64, text string) {
 	rect := gopdf.Rect{
-		W: cellWidth,
+		W: width,
 		H: cellHeight,
 	}
 	pdf.SetX(xTop)
@@ -490,11 +490,21 @@ func addTextToCellOfTable(pdf *gopdf.GoPdf, xTop, yLeft float64, text string) {
 
 }
 
+func showTextInto5thColumnsTable(pdf *gopdf.GoPdf, xTop, yLeft float64, text *[2][5]string)  {
+	localCellWidth := width/5.0
+	for i := 0; i <2; i++ {
+		deltaH := float64(i)*cellHeight
+		for j :=0; j < 5; j++ {
+			addTextToCellOfTable( pdf, xTop + float64(j)*localCellWidth, yLeft + deltaH, localCellWidth, text[i][j] )
+		}
+	}
+}
+
 func showTextIntoTable(pdf *gopdf.GoPdf, xTop, yLeft float64, text *[2][5]string, row int) {
 	for i := 0; i <2; i++ {
 		deltaH := float64(i)*cellHeight
 		for j :=0; j < row; j++ {
-			addTextToCellOfTable( pdf, xTop + float64(j)*cellWidth, yLeft + deltaH, text[i][j] )
+			addTextToCellOfTable( pdf, xTop + float64(j)*cellWidth, yLeft + deltaH, cellWidth, text[i][j] )
 		}
 	}
 }
