@@ -33,6 +33,13 @@ func getData(url, user, password string) []byte  {
 	if err != nil{
 		log.Fatal(err)
 	}
+
+	if resp.StatusCode != http.StatusOK {
+		fmt.Println("Wrong access to the URL: ", url)
+		fmt.Println("Status:", resp.Status)
+		os.Exit(1)
+	}
+
 	bodyText, err := ioutil.ReadAll(resp.Body)
 	return bodyText
 }
