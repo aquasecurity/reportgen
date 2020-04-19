@@ -320,8 +320,9 @@ func addVulnBlock( pdf *gopdf.GoPdf, vuln data.VulnerabilitiesResultType) {
 
 	pdf.Br(brSize)
 	negligbleBlockW := 100.0
-	pdf.SetFillColor(200, 236, 252)
-	pdf.SetTextColor(0,117, 191)
+
+	SetSeverityColor( pdf, vuln.AquaSeverity)
+	pdf.SetTextColor(0,0, 0)
 	addBlock( pdf, leftMargin, pdf.GetY(), negligbleBlockW, greyBlockH, "Severity: " + strings.Title(vuln.AquaSeverity))
 
 	pdf.SetTextColor(0,0,0)
@@ -461,6 +462,23 @@ func addHr(pdf *gopdf.GoPdf, yLeft float64) {
 	pdf.SetStrokeColor(0, 172, 195)
 	pdf.SetLineWidth(2)
 	pdf.Line(leftMargin, yLeft, leftMargin+width, yLeft)
+}
+
+func SetSeverityColor(pdf *gopdf.GoPdf, severity string) {
+	switch  strings.ToLower(severity) {
+	case "critical":
+		pdf.SetFillColor(192,0,0)
+	case "high":
+		pdf.SetFillColor(255,0,0)
+	case "medium":
+		pdf.SetFillColor(255,192,0)
+	case "low":
+		pdf.SetFillColor(255,255,0)
+	case "negligible":
+		pdf.SetFillColor(0,112,192)
+	default:
+		pdf.SetFillColor(200, 236, 252)
+	}
 }
 
 func showColorfulTable(pdf *gopdf.GoPdf, yLeft float64)  {
