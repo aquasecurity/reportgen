@@ -5,6 +5,7 @@ import (
 	"github.com/signintech/gopdf"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -177,11 +178,14 @@ func Render(output string, data *data.Report)  {
 	pdf.SetX(leftMargin)
 	pdf.Cell(nil, "Image Assurance Policies")
 
-	for _,v := range data.General.AssuranceResults.ChecksPerformed {
+
+
+	for name,value := range data.GetImageAssurancePolicies() {
 		pdf.Br(brSize)
+
 		pdf.SetX(leftMargin)
-		pdf.Cell(nil, "Policy \"" + v.PolicyName + "\": ")
-		if v.Failed {
+		pdf.Cell(nil, "Policy \"" + name + "\": ")
+		if value {
 			pdf.SetTextColor(255, 0, 0)
 			pdf.Cell(nil, "FAILED")
 		} else {
@@ -242,10 +246,10 @@ func Render(output string, data *data.Report)  {
 	})
 
 	// Sensitive Data
-	// [List of sensitive data]
-
 	pdf.Br(brSize*2)
+	checkEndOfPage( &pdf, brSize+80)
 	pdf.SetX(leftMargin)
+
 
 	pdf.SetFont(fontTypeBold, "", 10)
 	pdf.Cell(nil, "Sensitive Data")
@@ -253,14 +257,19 @@ func Render(output string, data *data.Report)  {
 	pdf.SetX(leftMargin)
 
 	pdf.SetFont(fontType, "", 9)
-	for _, result := range data.Sensitive.Results {
-		addCell( &pdf, leftMargin, pdf.GetY(), width, 15, "Type:")
-		addCell( &pdf, leftMargin, pdf.GetY()+15, width, 15, result.Type)
-		addCell( &pdf, leftMargin, pdf.GetY()+15, width, 15, "Path:")
-		addCell( &pdf, leftMargin, pdf.GetY()+15, width, 15, result.Path)
-		pdf.Br(brSize)
-		checkEndOfPage( &pdf, brSize+60)
+	if data.Sensitive.Count > 0 {
+		for _, result := range data.Sensitive.Results {
+			addCell( &pdf, leftMargin, pdf.GetY(), width, 15, "Type:")
+			addCell( &pdf, leftMargin, pdf.GetY()+15, width, 15, result.Type)
+			addCell( &pdf, leftMargin, pdf.GetY()+15, width, 15, "Path:")
+			addCell( &pdf, leftMargin, pdf.GetY()+15, width, 15, result.Path)
+			pdf.Br(brSize)
+			checkEndOfPage( &pdf, brSize+60)
+		}
+	} else {
+		pdf.Cell(nil, "None found.")
 	}
+
 	pdf.Br(brSize)
 
 	//Malware
@@ -269,20 +278,26 @@ func Render(output string, data *data.Report)  {
 	pdf.SetFont(fontTypeBold, "", 10)
 	pdf.Cell(nil, "Malware")
 	pdf.Br(brSize)
+	pdf.SetX(leftMargin)
 
 	pdf.SetFont(fontType, "", 9)
-	malwareTitleWidth := 40.0
-	for _, result := range data.Malware.Results {
-		addCell( &pdf, leftMargin, pdf.GetY(), malwareTitleWidth, 15, "Malware")
-		addCell( &pdf, leftMargin+malwareTitleWidth+padding, pdf.GetY(), width-malwareTitleWidth-2*padding, 15, result.Malware)
 
-		addCell( &pdf, leftMargin, pdf.GetY()+15, malwareTitleWidth, 15, "Path")
-		addCell( &pdf, leftMargin+malwareTitleWidth+padding, pdf.GetY(), width-malwareTitleWidth-2*padding, 15, result.Path)
+	if data.Malware.Count > 0 {
+		malwareTitleWidth := 40.0
+		for _, result := range data.Malware.Results {
+			addCell( &pdf, leftMargin, pdf.GetY(), malwareTitleWidth, 15, "Malware")
+			addCell( &pdf, leftMargin+malwareTitleWidth+padding, pdf.GetY(), width-malwareTitleWidth-2*padding, 15, result.Malware)
 
-		addCell( &pdf, leftMargin, pdf.GetY()+15, malwareTitleWidth, 15, "Hash")
-		addCell( &pdf, leftMargin+malwareTitleWidth+padding, pdf.GetY(), width-malwareTitleWidth-2*padding, 15, result.Hash)
-		pdf.Br(brSize)
-		checkEndOfPage( &pdf, brSize+45)
+			addCell( &pdf, leftMargin, pdf.GetY()+15, malwareTitleWidth, 15, "Path")
+			addCell( &pdf, leftMargin+malwareTitleWidth+padding, pdf.GetY(), width-malwareTitleWidth-2*padding, 15, result.Path)
+
+			addCell( &pdf, leftMargin, pdf.GetY()+15, malwareTitleWidth, 15, "Hash")
+			addCell( &pdf, leftMargin+malwareTitleWidth+padding, pdf.GetY(), width-malwareTitleWidth-2*padding, 15, result.Hash)
+			pdf.Br(brSize)
+			checkEndOfPage( &pdf, brSize+45)
+		}
+	} else {
+		pdf.Cell(nil, "None found")
 	}
 
 	pdf.Br(brSize)
@@ -315,19 +330,19 @@ func addVulnBlock( pdf *gopdf.GoPdf, vuln data.VulnerabilitiesResultType) {
 	pdf.Br(brSize)
 	pdf.SetFont(fontType, "", 11)
 	pdf.SetFillColor(236, 239, 241)
-	addBlock( pdf, leftMargin, pdf.GetY(), 200.0, greyBlockH, vuln.Name)
+	addBlock( pdf, leftMargin, pdf.GetY(), 200.0, greyBlockH, "Vulnerability: " +vuln.Name)
 	pdf.SetY( pdf.GetY()+greyBlockH)
 
 	pdf.Br(brSize)
 	negligbleBlockW := 100.0
 	pdf.SetFillColor(200, 236, 252)
 	pdf.SetTextColor(0,117, 191)
-	addBlock( pdf, leftMargin, pdf.GetY(), negligbleBlockW, greyBlockH, vuln.AquaSeverity)
+	addBlock( pdf, leftMargin, pdf.GetY(), negligbleBlockW, greyBlockH, "Severity: " + strings.Title(vuln.AquaSeverity))
 
 	pdf.SetTextColor(0,0,0)
 	pdf.SetFillColor(236, 239, 241)
 	addBlock( pdf, leftMargin+negligbleBlockW+padding*2, pdf.GetY(), 150.0, greyBlockH,
-		strconv.FormatFloat(vuln.AquaScore, 'f', 2, 64))
+		"Score: " + strconv.FormatFloat(vuln.AquaScore, 'f', 2, 64))
 
 	pdf.SetY( pdf.GetY()+greyBlockH)
 
@@ -394,9 +409,9 @@ func GetPassOrFailCheck(m map[string]bool, key string) string  {
 	v, ok := m[key]
 	if ok {
 		if v {
-			result = "PASS"
-		} else {
 			result = "FAIL"
+		} else {
+			result = "PASS"
 		}
 	}
 	return result

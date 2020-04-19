@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"sync"
 )
 
@@ -37,7 +38,14 @@ func getData(url, user, password string) []byte  {
 }
 
 func GetData(server, user, password, registry, image string ) *data.Report {
-	urlBase := server + api_url + registry + "/" + image
+	var slash string
+	if strings.HasSuffix( server,"/") {
+		slash = ""
+	} else {
+		slash = "/"
+	}
+
+	urlBase := server + slash+ api_url + registry + "/" + image
 
 	result := new(data.Report)
 	result.General = new(data.GeneralType)

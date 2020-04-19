@@ -15,3 +15,17 @@ func (report *Report) MappingImageAssuranceChecks() map[string]bool {
 	}
 	return result
 }
+
+func (report *Report) GetImageAssurancePolicies() map[string]bool {
+	result := make(map[string] bool)
+
+	for _, policy := range report.General.AssuranceResults.ChecksPerformed {
+		if _, ok := result[policy.PolicyName]; !ok {
+			result[policy.PolicyName] = false
+		}
+		if policy.Failed {
+			result[policy.PolicyName] = true
+		}
+	}
+	return result
+}
