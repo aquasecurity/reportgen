@@ -15,7 +15,9 @@ COPY --from=builder /reportgen/main /reportgen/
 COPY --from=builder /reportgen/pdfrender/*.ttf /reportgen/pdfrender/
 COPY --from=builder /reportgen/pdfrender/*.png /reportgen/pdfrender/
 WORKDIR /reportgen
-#RUN adduser -S -D -H -h /reportgen report
-#USER report
+RUN adduser -D -g '' report
+RUN chown -R report:report /reportgen
+RUN chown -R report:report /reports
+USER report
 VOLUME ["/reports"]
 ENTRYPOINT ["/reportgen/main"]
