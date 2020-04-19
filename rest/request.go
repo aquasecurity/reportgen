@@ -80,7 +80,7 @@ func GetData(server, user, password, registry, image string ) *data.Report {
 
 	vulnerabiliti := getData(urlBase+vulnerabiliti_url, user, password)
 	if err := json.Unmarshal(vulnerabiliti, result.Vulnerabilities); err != nil {
-		fmt.Println("Can't parse response from server (vulnerabiliti):")//, string(vulnerabiliti))
+		fmt.Println("Can't parse response from server (vulnerabiliti):")
 		os.Exit(1)
 	}
 	return result

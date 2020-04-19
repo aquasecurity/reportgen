@@ -384,13 +384,13 @@ func addVulnBlock( pdf *gopdf.GoPdf, vuln data.VulnerabilitiesResultType) {
 	if vuln.Solution != "" {
 		multilineSolution,_ := pdf.SplitText(vuln.Solution, width)
 		addMultiLines( pdf, leftMargin, 12, multilineSolution )
+		pdf.Br(brSize*0.5)
 	} else {
 		pdf.Cell(nil, "none")
+		pdf.Br(brSize)
 	}
-	pdf.Br(brSize*0.5)
 	checkEndOfPage( pdf, heightPage/6)
 	addHrGrey( pdf, pdf.GetY())
-
 	pdf.Br(brSize)
 	pdf.SetX(leftMargin)
 	pdf.SetFont(fontTypeBold, "", 10)
