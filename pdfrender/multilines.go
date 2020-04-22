@@ -1,11 +1,16 @@
 package pdfrender
 
-import "github.com/signintech/gopdf"
+import (
+	"github.com/signintech/gopdf"
+	"regexp"
+)
 
-func splitString( pdf *gopdf.GoPdf, data *string, width float64) ([]string) {
-	lines, err := pdf.SplitText(*data, width)
+func splitString( pdf *gopdf.GoPdf, input *string, width float64) []string {
+	re := regexp.MustCompile(`[[:cntrl:]]|[\x{FFFD}]`)
+	pureString := re.ReplaceAllString(*input, "")
+	lines, err := pdf.SplitText(pureString, width)
 	if err != nil {
-		return []string{}
+		return []string { pureString }
 	}
 	var emptyString int
 	for i,v := range lines {
@@ -18,7 +23,6 @@ func splitString( pdf *gopdf.GoPdf, data *string, width float64) ([]string) {
 	if emptyString > 0 {
 		lines = lines[:len(lines)-emptyString]
 	}
-
 	return lines
 }
 

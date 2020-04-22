@@ -3,33 +3,25 @@ package pdfrender
 import (
 	"../data"
 	"github.com/signintech/gopdf"
-	"log"
 	"strconv"
 	"time"
 )
 
-func Render(output string, data *data.Report)  {
+func Render(output string, data *data.Report) error {
 	currentDate := time.Now().Format(dateFormat)
 
 	pdf := gopdf.GoPdf{}
 	pdf.Start(gopdf.Config{ PageSize: *gopdf.PageSizeA4 }) //595.28, 841.89 = A4
 	pdf.AddPage()
-
 	err := pdf.AddTTFFont(fontType, ttfPathRegular)
 	if err != nil {
-		log.Print(err.Error())
-		return
+		return err
 	}
 	err = pdf.AddTTFFont(fontTypeBold, ttfPathBold )
 	if err != nil {
-		log.Print(err.Error())
-		return
+		return err
 	}
-	err = pdf.SetFont(fontType, "", 14)
-	if err != nil {
-		log.Print(err.Error())
-		return
-	}
+
 	// Logo
 	pdf.Image(longPath, leftMargin, topMargin, nil)
 
@@ -41,6 +33,7 @@ func Render(output string, data *data.Report)  {
 	pdf.SetX(leftMargin+padding)
 	pdf.SetY(yTitleBase + padding)
 	pdf.SetTextColor(255,255,255)
+	pdf.SetFont(fontType, "", 14)
 	pdf.Cell(nil, "Image Vulnerability Report")
 
 	pdf.SetX(leftMargin)
@@ -55,7 +48,7 @@ func Render(output string, data *data.Report)  {
 
 	// line after 1
 	yLine1 := pdf.GetY()+ 2* padding
-	pdf.SetLineWidth(1)
+	pdf.SetLineWidth(1.0)
 	pdf.Line(leftMargin, yLine1, leftMargin+width, yLine1)
 
 	pdf.SetX(leftMargin)
@@ -243,7 +236,6 @@ func Render(output string, data *data.Report)  {
 	for _, vuln := range data.Vulnerabilities.Results {
 		addVulnBlock( &pdf, vuln)
 	}
-
-	pdf.WritePdf(output)
+	return pdf.WritePdf(output)
 }
 
