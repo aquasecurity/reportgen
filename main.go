@@ -95,6 +95,11 @@ func main() {
 	}
 	data := rest.GetData(serverUrl, user, password, registryName, imageName)
 	data.ServerUrl = serverUrl
-	pdfrender.Render(filename, data)
+	err := pdfrender.Render(filename, data)
+	if err != nil {
+		fmt.Println("Error:", err.Error())
+		os.Exit(1)
+	}
+
 	fmt.Println("Report was written to", filename)
 }
