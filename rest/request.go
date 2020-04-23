@@ -65,61 +65,30 @@ func GetData(server, user, password, registry, image string ) *data.Report {
 	result.General = new(data.GeneralType)
 	result.Sensitive = new(data.SensitiveType)
 	result.Malware = new(data.MalwareType)
+	result.Vulnerabilities = new(data.VulnerabilitiesType)
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		defaultPageSize := 100
-		vulnCount := 0
-		var maxVulnerabilities int
-		for page:=1; vulnCount < maxVulnerabilities || vulnCount == 0;page++ {
-			urlForVulnerabilitiesD := fmt.Sprintf("%s%s?pagesize=%d&page=%d", urlBase, vulnerabiliti_url, defaultPageSize, page)
-			vulnerabiliti := getData( urlForVulnerabilitiesD, user, password)
-			vuln := new (data.VulnerabilitiesType)
-			if err := json.Unmarshal(vulnerabiliti, &vuln); err != nil {
-				fmt.Println("Can't parse response from server (vulnerabiliti):")
-				fmt.Println(string(vulnerabiliti))
-				os.Exit(1)
-			}
-			if maxVulnerabilities == 0 {
-				result.Vulnerabilities = vuln
-				maxVulnerabilities = vuln.Count
-			} else {
-				result.Vulnerabilities.Results = append(result.Vulnerabilities.Results, vuln.Results...)
-			}
-			vulnCount += len(vuln.Results)
-		}
-	}()
+	general := getData(urlBase, user, password)
+	if err := json.Unmarshal(general, result.General); err != nil {
+		fmt.Println("Can't parse response from server (general):", string(general))
+		os.Exit(1)
+	}
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		general := getData(urlBase, user, password)
-		if err := json.Unmarshal(general, &result.General); err != nil {
-			fmt.Println("Can't parse response from server (general):", string(general))
-			os.Exit(1)
-		}
-	}()
+	sensitive := getData(urlBase+sensitive_url, user, password)
+	if err := json.Unmarshal(sensitive, result.Sensitive); err != nil {
+		fmt.Println("Can't parse response from server (sensitive):", string(sensitive))
+		os.Exit(1)
+	}
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		sensitive := getData(urlBase+sensitive_url, user, password)
-		if err := json.Unmarshal(sensitive, &result.Sensitive); err != nil {
-			fmt.Println("Can't parse response from server (sensitive):", string(sensitive))
-			os.Exit(1)
-		}
-	}()
+	malware := getData(urlBase+malware_url, user, password)
+	if err := json.Unmarshal(malware, result.Malware); err != nil {
+		fmt.Println("Can't parse response from server (malware):", string(malware))
+		os.Exit(1)
+	}
 
-	wg.Add(1)
-	go func() {
-		wg.Done()
-		malware := getData(urlBase+malware_url, user, password)
-		if err := json.Unmarshal(malware, &result.Malware); err != nil {
-			fmt.Println("Can't parse response from server (malware):", string(malware))
-			os.Exit(1)
-		}
-	}()
-	wg.Wait()
+	vulnerabiliti := getData(urlBase+vulnerabiliti_url, user, password)
+	if err := json.Unmarshal(vulnerabiliti, result.Vulnerabilities); err != nil {
+		fmt.Println("Can't parse response from server (vulnerabiliti):")
+		os.Exit(1)
+	}
 	return result
 }
