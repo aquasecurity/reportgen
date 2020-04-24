@@ -3,6 +3,7 @@ package data
 type VulnerabilitiesResourceType struct {
 	Name string `json:"name"`
 	Version string `json:"version"`
+	Path string `json:"path"`
 }
 
 type VulnerabilitiesResultType struct {
