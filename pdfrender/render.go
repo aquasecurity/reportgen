@@ -116,14 +116,8 @@ func Render(output string, data *data.Report) error {
 	pdf.SetFont(fontTypeBold, "", 12)
 
 	pdf.Cell(nil, "Image is ")
-	if data.General.AssuranceResults.Disallowed {
-		pdf.SetTextColor(255,151,47)
-		pdf.Cell(nil, "Non-Compliant")
-	} else {
-		pdf.SetTextColor(0,255,0)
-		pdf.Cell(nil, "Compliant")
-	}
-	pdf.SetTextColor(0,0,0)
+
+	addCompliantText(&pdf, data.General.AssuranceResults.Disallowed)
 
 	// Block Number of Vulnerabilities
 	pdf.Br(brSize*1.5)
@@ -218,10 +212,15 @@ func Render(output string, data *data.Report) error {
 		pdf.Cell(nil, "None found")
 	}
 
-	pdf.Br(brSize)
-
 	// Scan History
+	checkEndOfPageWithBr( &pdf, rowSize*3+padding*3+brSize)
+
+	pdf.SetFont(fontTypeBold, "", 12)
+	pdf.Cell(nil, "Scan History")
+	pdf.Br(brSize)
 	showScanHistory( &pdf, data.ScanHistory)
+
+	// end of ScanGistory
 
 	checkEndOfPageWithBr( &pdf, heightPage/2)
 	addHr(&pdf, pdf.GetY())
