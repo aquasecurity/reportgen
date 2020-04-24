@@ -227,6 +227,9 @@ func Render(output string, data *data.Report)  {
 
 	pdf.Br(brSize)
 
+	// Scan History
+	showScanHistory( &pdf, data.ScanHistory)
+
 	checkEndOfPageWithBr( &pdf, heightPage/2)
 	addHr(&pdf, pdf.GetY())
 	// line
