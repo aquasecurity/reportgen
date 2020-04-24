@@ -17,6 +17,8 @@ const (
 	vulnerabiliti_url = "/vulnerabilities"
 	sensitive_url = "/sensitive"
 	malware_url = "/malware"
+
+	all_severities = "ALL"
 )
 
 var (
@@ -44,7 +46,16 @@ func getData(url, user, password string) []byte  {
 	return bodyText
 }
 
-func GetData(server, user, password, registry, image string ) *data.Report {
+func GetData(server, user, password, registry, image string, severities []string ) *data.Report {
+	if len(severities) > 0 {
+		fmt.Println("Next severities will be selected:")
+		for _, s := range severities {
+			fmt.Println("*", s)
+		}
+	} else {
+		severities = []string{all_severities}
+	}
+
 	var slash string
 	if strings.HasSuffix( server,"/") {
 		slash = ""
@@ -70,24 +81,29 @@ func GetData(server, user, password, registry, image string ) *data.Report {
 	go func() {
 		defer wg.Done()
 		defaultPageSize := 100
-		vulnCount := 0
-		var maxVulnerabilities int
-		for page:=1; vulnCount < maxVulnerabilities || vulnCount == 0;page++ {
-			urlForVulnerabilitiesD := fmt.Sprintf("%s%s?pagesize=%d&page=%d", urlBase, vulnerabiliti_url, defaultPageSize, page)
-			vulnerabiliti := getData( urlForVulnerabilitiesD, user, password)
-			vuln := new (data.VulnerabilitiesType)
-			if err := json.Unmarshal(vulnerabiliti, &vuln); err != nil {
-				fmt.Println("Can't parse response from server (vulnerabiliti):")
-				fmt.Println(string(vulnerabiliti))
-				os.Exit(1)
-			}
-			if maxVulnerabilities == 0 {
-				result.Vulnerabilities = vuln
-				maxVulnerabilities = vuln.Count
-			} else {
+		result.Vulnerabilities = new(data.VulnerabilitiesType)
+
+		for _, severity := range severities {
+			vulnCount := 0
+			var maxVulnerabilities int
+			for page:=1; vulnCount < maxVulnerabilities || vulnCount == 0;page++ {
+				urlForVulnerabilitiesD := fmt.Sprintf("%s%s?pagesize=%d&page=%d", urlBase, vulnerabiliti_url, defaultPageSize, page)
+				if severity != all_severities {
+					urlForVulnerabilitiesD += "&severity=" + severity
+				}
+				vulnerabiliti := getData( urlForVulnerabilitiesD, user, password)
+				vuln := new (data.VulnerabilitiesType)
+				if err := json.Unmarshal(vulnerabiliti, &vuln); err != nil {
+					fmt.Println("Can't parse response from server (vulnerabiliti):")
+					fmt.Println(string(vulnerabiliti))
+					os.Exit(1)
+				}
+				if maxVulnerabilities == 0 {
+					maxVulnerabilities = vuln.Count
+				}
 				result.Vulnerabilities.Results = append(result.Vulnerabilities.Results, vuln.Results...)
+				vulnCount += len(vuln.Results)
 			}
-			vulnCount += len(vuln.Results)
 		}
 	}()
 
@@ -121,5 +137,6 @@ func GetData(server, user, password, registry, image string ) *data.Report {
 		}
 	}()
 	wg.Wait()
+
 	return result
 }
