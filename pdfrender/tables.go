@@ -39,14 +39,12 @@ func addTextToCellOfTable(pdf *gopdf.GoPdf, xTop, yLeft, width float64, text str
 	}
 	pdf.SetX(xTop)
 	pdf.SetY(yLeft)
-
 	if text == "FAIL" {
 		pdf.SetTextColor(255,0,0)
 	}
 	if text == "PASS" {
 		pdf.SetTextColor(0,255,0)
 	}
-
 	pdf.CellWithOption(&rect, text, cellOption)
 	pdf.SetTextColor(0,0,0)
 }
