@@ -98,6 +98,9 @@ func GetData(server, user, password, registry, image string, severities []string
 					fmt.Println(string(vulnerabiliti))
 					os.Exit(1)
 				}
+				if vuln.Count == 0 {
+					break
+				}
 				if maxVulnerabilities == 0 {
 					maxVulnerabilities = vuln.Count
 				}
