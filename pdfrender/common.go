@@ -22,9 +22,9 @@ const (
 	cellHeight = 25
 	cellWidth = width/numberCellInRow
 
-	ttfPathRegular = "./pdfrender/calibri.ttf"
-	ttfPathBold = "./pdfrender/calibri-bold.ttf"
-	longPath = "./pdfrender/logo.png"
+	ttfPathRegular = "./assets/calibri.ttf"
+	ttfPathBold = "./assets/calibri-bold.ttf"
+	longPath = "./assets/logo.png"
 
 	dateFormat = "2006-01-02 15:04"
 

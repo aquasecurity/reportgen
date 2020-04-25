@@ -9,11 +9,11 @@ RUN go build -o main .
 
 FROM alpine
 RUN mkdir /reportgen
-RUN mkdir /reportgen/pdfrender
+RUN mkdir /reportgen/assets
 RUN mkdir /reports
 COPY --from=builder /reportgen/main /reportgen/
-COPY --from=builder /reportgen/pdfrender/*.ttf /reportgen/pdfrender/
-COPY --from=builder /reportgen/pdfrender/*.png /reportgen/pdfrender/
+COPY --from=builder /reportgen/assets/*.ttf /reportgen/assets/
+COPY --from=builder /reportgen/assets/*.png /reportgen/assets/
 WORKDIR /reportgen
 RUN adduser -D -g '' report
 RUN chown -R report:report /reportgen
