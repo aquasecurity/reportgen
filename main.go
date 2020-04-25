@@ -10,8 +10,6 @@ import (
 	"strings"
 )
 
-type strslice []string
-
 var (
 	serverUrl string
 	registryName string
@@ -19,7 +17,8 @@ var (
 	user string
 	password string
 	output string
-	severities strslice
+	severities []string
+	severityParams string
 
 	severitiesTypes = []string{
 		"critical",
@@ -37,18 +36,7 @@ const (
 	cmdPassword = "password"
 	cmdOutput = "output"
 	cmdSeverity = "severity"
-
-
 )
-
-func (str *strslice) String() string {
-	return fmt.Sprintf("%s", *str)
-}
-
-func (str *strslice) Set(value string) error {
-	*str = append(*str, strings.ToLower(value))
-	return nil
-}
 
 func init()  {
 	flag.StringVar(&serverUrl, cmdServer, "", "URL of a data server")
@@ -57,7 +45,7 @@ func init()  {
 	flag.StringVar(&user, cmdUser, "", "a user for the basic authentication")
 	flag.StringVar(&password, cmdPassword, "", "a user's password for the basic authentication")
 	flag.StringVar(&output, cmdOutput, "report.pdf", "a name of output pdf file")
-	flag.Var( &severities, cmdSeverity, "to get list of vulnerabilities. critical/high/medium/low" )
+	flag.StringVar(&severityParams, cmdSeverity, "", "to get list of vulnerabilities. critical,high,medium,low" )
 }
 
 func checkRequiredParams() bool {
@@ -98,7 +86,8 @@ func checkRequiredParams() bool {
 		return false
 	}
 
-	if severities != nil {
+	if severityParams != "" {
+		severities = strings.Split(strings.ToLower(severityParams), ",")
 		for _, severity := range severities {
 			var count int
 			for _,v := range severitiesTypes {
@@ -121,7 +110,6 @@ func main() {
 	godotenv.Load()
 
 	if ok:=checkRequiredParams(); !ok {
-		fmt.Println("All params are required!")
 		fmt.Println("Run with key '-h' for usage.")
 		os.Exit(1)
 	}
