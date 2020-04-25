@@ -112,13 +112,26 @@ func showCountsResults(pdf *gopdf.GoPdf, results data.ScanHistoryResult, width f
 	pdf.RectFromUpperLeftWithStyle( pdf.GetX(), pdf.GetY(), maxWidth,rowSize, "F")
 	addCellCount( pdf, neg, maxWidth )
 
-	pdf.SetX(xBegin+ (5*maxWidth)+(padding/2.0))
+	pdf.SetX(xBegin+ (5*maxWidth)+(padding/5.0))
+
 	if results.MalwareCount > 0 {
 		setDarkGrayBackgroundColor(pdf)
 	} else {
 		setLightGrayBackgroundColor(pdf)
 	}
-	pdf.RectFromUpperLeftWithStyle( pdf.GetX(), pdf.GetY(), maxWidth,rowSize, "F")
+
+	imgMalwareWidth := 8.0
+	imgMalwareHeight := imgMalwareWidth/15.0*13.0
+	imgMalware := gopdf.Rect{
+		W: imgMalwareWidth,
+		H: imgMalwareHeight,
+	}
+	xMalwareBase := pdf.GetX()
+	yMalwareBase := pdf.GetY()
+	malwarePadding := (rowSize-imgMalwareHeight)/2.0
+	pdf.RectFromUpperLeftWithStyle( xMalwareBase, yMalwareBase, maxWidth+imgMalwareWidth,rowSize, "F")
+	pdf.Image( "./assets/malware.png",  xMalwareBase+malwarePadding-1, yMalwareBase+malwarePadding, &imgMalware)
+	pdf.SetX( xMalwareBase+imgMalwareWidth)
 	addCellCount( pdf, malware, maxWidth )
 
 	setDefaultBackgroundColor(pdf)
