@@ -1,6 +1,9 @@
 package pdfrender
 
-import "github.com/signintech/gopdf"
+import (
+	"github.com/signintech/gopdf"
+	"strings"
+)
 
 const (
 	leftMargin = 30
@@ -19,9 +22,9 @@ const (
 	cellHeight = 25
 	cellWidth = width/numberCellInRow
 
-	ttfPathRegular = "./pdfrender/calibri.ttf"
-	ttfPathBold = "./pdfrender/calibri-bold.ttf"
-	longPath = "./pdfrender/logo.png"
+	ttfPathRegular = "./assets/calibri.ttf"
+	ttfPathBold = "./assets/calibri-bold.ttf"
+	longPath = "./assets/logo.png"
 
 	dateFormat = "2006-01-02 15:04"
 
@@ -73,14 +76,75 @@ func checkEndOfPage(pdf *gopdf.GoPdf, deltaY float64, needBr bool) {
 	pdf.SetX(leftMargin)
 }
 
-func addHrGrey(pdf *gopdf.GoPdf, yLeft float64) {
+func addHrGreyH(pdf *gopdf.GoPdf, yLeft, h float64) {
 	pdf.SetStrokeColor(236, 239, 241)
-	pdf.SetLineWidth(2)
+	pdf.SetLineWidth(h)
 	pdf.Line(leftMargin, yLeft, leftMargin+width, yLeft)
+}
+
+func addHrGrey(pdf *gopdf.GoPdf, yLeft float64) {
+	addHrGreyH(pdf, yLeft, 2)
 }
 
 func addHr(pdf *gopdf.GoPdf, yLeft float64) {
 	pdf.SetStrokeColor(0, 172, 195)
-	pdf.SetLineWidth(2)
+	pdf.SetLineWidth(1)
 	pdf.Line(leftMargin, yLeft, leftMargin+width, yLeft)
+}
+
+func addCompliantText(pdf *gopdf.GoPdf, disallowed bool) {
+	if disallowed {
+		pdf.SetTextColor(255,151,47)
+		pdf.Cell(nil, "Non-Compliant")
+	} else {
+		pdf.SetTextColor(0,255,0)
+		pdf.Cell(nil, "Compliant")
+	}
+	pdf.SetTextColor(0,0,0)
+}
+
+func setLightGrayBackgroundColor(pdf *gopdf.GoPdf)  {
+	pdf.SetFillColor(247,248,250)
+}
+func setDarkGrayBackgroundColor(pdf *gopdf.GoPdf)  {
+	pdf.SetFillColor(223,223,223)
+}
+
+func setDefaultBackgroundColor(pdf *gopdf.GoPdf)  {
+	pdf.SetFillColor(255,255,255)
+}
+
+func setCriticalBackgroundColor(pdf *gopdf.GoPdf)  {
+	pdf.SetFillColor(192,0,0)
+}
+
+func setHighBackgroundColor(pdf *gopdf.GoPdf) {
+	pdf.SetFillColor(255,0,0)
+}
+
+func setMediumBackgroundColor(pdf *gopdf.GoPdf) {
+	pdf.SetFillColor(255,192,0)
+}
+func setLowBackgroundColor(pdf *gopdf.GoPdf) {
+	pdf.SetFillColor(255,255,0)
+}
+func setNegligibleBackgroundColor(pdf *gopdf.GoPdf) {
+	pdf.SetFillColor(0,112,192)
+}
+
+func SetSeverityColor(pdf *gopdf.GoPdf, severity string) {
+	switch  strings.ToLower(severity) {
+	case "critical":
+		setCriticalBackgroundColor(pdf)
+	case "high":
+		setHighBackgroundColor(pdf)
+	case "medium":
+		setMediumBackgroundColor(pdf)
+	case "low":
+		setLowBackgroundColor(pdf)
+	case "negligible":
+		setNegligibleBackgroundColor(pdf)
+	default:
+		pdf.SetFillColor(200, 236, 252)
+	}
 }

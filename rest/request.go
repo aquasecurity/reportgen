@@ -17,8 +17,8 @@ const (
 	vulnerabiliti_url = "/vulnerabilities"
 	sensitive_url = "/sensitive"
 	malware_url = "/malware"
-
 	all_severities = "ALL"
+	scanhistory_url = "/scan_history"
 )
 
 var (
@@ -76,6 +76,7 @@ func GetData(server, user, password, registry, image string, severities []string
 	result.General = new(data.GeneralType)
 	result.Sensitive = new(data.SensitiveType)
 	result.Malware = new(data.MalwareType)
+	result.Vulnerabilities = new(data.VulnerabilitiesType)
 
 	wg.Add(1)
 	go func() {
@@ -113,6 +114,31 @@ func GetData(server, user, password, registry, image string, severities []string
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+		pagesize := 10
+
+		var scanMax int
+		var scanCount int
+		for page := 1; scanCount < scanMax || scanMax == 0; page++ {
+			scanHistoryUrl := fmt.Sprintf("%s%s?order_by=-date&page=%d&page_size=%d", urlBase, scanhistory_url, page, pagesize)
+			scanHistorySource := getData(scanHistoryUrl, user, password)
+			scanHistory := new(data.ScanHistoryType)
+			if err := json.Unmarshal(scanHistorySource, scanHistory); err != nil {
+				fmt.Println("Can't parse response from server (scanHistory):")
+				os.Exit(1)
+			}
+			if result.ScanHistory == nil {
+				result.ScanHistory = scanHistory
+				scanMax = scanHistory.Count
+			} else {
+				result.ScanHistory.Results = append(result.ScanHistory.Results, scanHistory.Results...)
+			}
+			scanCount += len(scanHistory.Results)
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
 		general := getData(urlBase, user, password)
 		if err := json.Unmarshal(general, &result.General); err != nil {
 			fmt.Println("Can't parse response from server (general):", string(general))
@@ -139,6 +165,7 @@ func GetData(server, user, password, registry, image string, severities []string
 			os.Exit(1)
 		}
 	}()
+
 	wg.Wait()
 
 	return result
