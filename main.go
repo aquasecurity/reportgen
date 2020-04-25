@@ -17,6 +17,15 @@ var (
 	user string
 	password string
 	output string
+	severities []string
+	severityParams string
+
+	severitiesTypes = []string{
+		"critical",
+		"high",
+		"medium",
+		"low",
+	}
 )
 
 const (
@@ -26,6 +35,7 @@ const (
 	cmdUser = "user"
 	cmdPassword = "password"
 	cmdOutput = "output"
+	cmdSeverity = "severity"
 )
 
 func init()  {
@@ -35,6 +45,7 @@ func init()  {
 	flag.StringVar(&user, cmdUser, "", "a user for the basic authentication")
 	flag.StringVar(&password, cmdPassword, "", "a user's password for the basic authentication")
 	flag.StringVar(&output, cmdOutput, "report.pdf", "a name of output pdf file")
+	flag.StringVar(&severityParams, cmdSeverity, "", "to get list of vulnerabilities. critical,high,medium,low" )
 }
 
 func checkRequiredParams() bool {
@@ -74,6 +85,23 @@ func checkRequiredParams() bool {
 		}
 		return false
 	}
+
+	if severityParams != "" {
+		severities = strings.Split(strings.ToLower(severityParams), ",")
+		for _, severity := range severities {
+			var count int
+			for _,v := range severitiesTypes {
+				if severity == v {
+					break
+				}
+				count++
+			}
+			if count == len(severitiesTypes) {
+				fmt.Println("Wrong severity type:", severity)
+				return false
+			}
+		}
+	}
 	return true
 }
 
@@ -82,7 +110,6 @@ func main() {
 	godotenv.Load()
 
 	if ok:=checkRequiredParams(); !ok {
-		fmt.Println("All params are required!")
 		fmt.Println("Run with key '-h' for usage.")
 		os.Exit(1)
 	}
@@ -93,7 +120,7 @@ func main() {
 	} else {
 		filename = output
 	}
-	data := rest.GetData(serverUrl, user, password, registryName, imageName)
+	data := rest.GetData(serverUrl, user, password, registryName, imageName, severities)
 	data.ServerUrl = serverUrl
 	err := pdfrender.Render(filename, data)
 	if err != nil {
