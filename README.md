@@ -28,12 +28,12 @@ NAME:
   reportgen - A tool to generate PDF reports for Aqua CSP images and hosts
 USAGE:
   main [options] 
-Mandatory Options:
+MANDATORY OPTIONS:
   -server       Aqua CSP server URL
   -user         User name
   -password     Password
   -image        Image name (e.g. mongo:latest)
   -output       Output file where to save PDF
-Optional Options:
+OPTIONAL OPTIONS:
   -severity     Comma seperated list of severities to export (critical, high, medium, low)
 ```
