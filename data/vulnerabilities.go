@@ -6,6 +6,11 @@ type VulnerabilitiesResourceType struct {
 	Path string `json:"path"`
 }
 
+type ReferencedVulnerabilitiesType struct {
+	Name string `json:"name"`
+	AquaSeverity string `json:"aqua_severity"`
+}
+
 type VulnerabilitiesResultType struct {
 	Name string `json:"name"`
 	AquaSeverity string `json:"aqua_severity"`
@@ -14,6 +19,7 @@ type VulnerabilitiesResultType struct {
 	FixVersion string `json:"fix_version"`
 	Description string `json:"description"`
 	Solution string `json:"solution"`
+	ReferencedVulnerabilities []ReferencedVulnerabilitiesType `json:"referenced_vulnerabilities"`
 }
 
 type VulnerabilitiesType struct {
