@@ -1,7 +1,14 @@
 package data
 
+const (
+	ImageRequest = 0
+	HostRequest = 1
+)
+
 type Report struct {
+	RequestType int
 	ServerUrl string
+
 	General *GeneralType
 	Sensitive *SensitiveType
 	Malware *MalwareType
@@ -20,7 +27,6 @@ func (report *Report) GetImageAssurancePolicies() (map[string]bool,map[string][]
 		if policy.Failed {
 			result[policy.PolicyName] = true
 		}
-
 		checks[policy.PolicyName] = append(checks[policy.PolicyName], policy)
 	}
 	return result, checks

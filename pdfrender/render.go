@@ -173,7 +173,7 @@ func Render(output string, data *data.Report) error {
 	pdf.SetX(leftMargin)
 
 	pdf.SetFont(fontType, "", 9)
-	if data.Sensitive.Count > 0 {
+	if data.Sensitive != nil && data.Sensitive.Count > 0 {
 		for _, result := range data.Sensitive.Results {
 			addCellText( &pdf, leftMargin, pdf.GetY(), width, 15, "Type:")
 			addCellText( &pdf, leftMargin, pdf.GetY()+15, width, 15, result.Type)
@@ -194,7 +194,7 @@ func Render(output string, data *data.Report) error {
 
 	pdf.SetFont(fontType, "", 9)
 
-	if data.Malware.Count > 0 {
+	if data.Malware != nil && data.Malware.Count > 0 {
 		malwareTitleWidth := 40.0+2*padding
 		for _, result := range data.Malware.Results {
 			addCellText( &pdf, leftMargin, pdf.GetY(), malwareTitleWidth, 15, "Malware")
@@ -218,7 +218,9 @@ func Render(output string, data *data.Report) error {
 	pdf.SetFont(fontTypeBold, "", 12)
 	pdf.Cell(nil, "Scan History")
 	pdf.Br(brSize)
-	showScanHistory( &pdf, data.ScanHistory)
+	if data.ScanHistory != nil {
+		showScanHistory( &pdf, data.ScanHistory)
+	}
 
 	// end of ScanGistory
 
