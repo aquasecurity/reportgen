@@ -5,26 +5,26 @@ import (
 	"github.com/signintech/gopdf"
 )
 
-func showTextIntoFiveColumnsTable(pdf *gopdf.GoPdf, xTop, yLeft float64, text *[2][5]string)  {
+func showTextIntoFiveColumnsTable( xTop, yLeft float64, text *[2][5]string)  {
 	localCellWidth := width/5.0
 	for i := 0; i <2; i++ {
 		deltaH := float64(i)*cellHeight
 		for j :=0; j < 5; j++ {
-			addTextToCellOfTable( pdf, xTop + float64(j)*localCellWidth, yLeft + deltaH, localCellWidth, text[i][j] )
+			addTextToCellOfTable( xTop + float64(j)*localCellWidth, yLeft + deltaH, localCellWidth, text[i][j] )
 		}
 	}
 }
 
-func showTextIntoTable(pdf *gopdf.GoPdf, xTop, yLeft float64, text *[2][5]string, column int) {
+func showTextIntoTable(xTop, yLeft float64, text *[2][5]string, column int) {
 	for i := 0; i <2; i++ {
 		deltaH := float64(i)*cellHeight
 		for j :=0; j < column; j++ {
-			addTextToCellOfTable( pdf, xTop + float64(j)*cellWidth, yLeft + deltaH, cellWidth, text[i][j] )
+			addTextToCellOfTable( xTop + float64(j)*cellWidth, yLeft + deltaH, cellWidth, text[i][j] )
 		}
 	}
 }
 
-func showTwoLineTable(pdf *gopdf.GoPdf, xTop, yLeft float64, columns int) {
+func showTwoLineTable( xTop, yLeft float64, columns int) {
 	for i := 0; i < columns; i++ {
 		delta := float64(i) * cellWidth
 		pdf.RectFromUpperLeftWithStyle(xTop+delta, yLeft, cellWidth, cellHeight, "D")
@@ -32,7 +32,7 @@ func showTwoLineTable(pdf *gopdf.GoPdf, xTop, yLeft float64, columns int) {
 	}
 }
 
-func addTextToCellOfTable(pdf *gopdf.GoPdf, xTop, yLeft, width float64, text string) {
+func addTextToCellOfTable(xTop, yLeft, width float64, text string) {
 	rect := gopdf.Rect{
 		W: width,
 		H: cellHeight,
@@ -49,12 +49,23 @@ func addTextToCellOfTable(pdf *gopdf.GoPdf, xTop, yLeft, width float64, text str
 	pdf.SetTextColor(0,0,0)
 }
 
-func addCellBorder(pdf *gopdf.GoPdf, x, y, w, h float64) {
+func addCellBorder( x, y, w, h float64) {
 	pdf.RectFromUpperLeftWithStyle(x,y, w, h, "D")
 }
 
-func addCellText(pdf *gopdf.GoPdf, x, y, w, h float64, text string) {
-	addCellBorder(pdf, x,y,w,h)
+func addBlock( x, y, w,h float64, text string)  {
+	pdf.RectFromUpperLeftWithStyle(x,y, w, h, "F")
+	rect := gopdf.Rect{
+		W: w,
+		H: h,
+	}
+	pdf.SetX(x)
+	pdf.SetY(y)
+	pdf.CellWithOption(&rect, text, cellOption)
+}
+
+func addCellText(x, y, w, h float64, text string) {
+	addCellBorder( x,y,w,h)
 	opt := gopdf.CellOption{
 		Align:  gopdf.Middle | gopdf.Left,
 		Border: 0,
@@ -70,7 +81,7 @@ func addCellText(pdf *gopdf.GoPdf, x, y, w, h float64, text string) {
 	pdf.SetX(pdf.GetX()+padding)
 }
 
-func showColorfulTable(pdf *gopdf.GoPdf, yLeft float64)  {
+func showColorfulTable(yLeft float64)  {
 	localCellWidth := width/5.0
 	pdf.SetFillColor(192,0,0)
 	pdf.RectFromUpperLeftWithStyle(leftMargin, yLeft, localCellWidth, cellHeight, "FD")
@@ -93,7 +104,7 @@ func showColorfulTable(pdf *gopdf.GoPdf, yLeft float64)  {
 	pdf.RectFromUpperLeftWithStyle(leftMargin+4*localCellWidth, yLeft+cellHeight, localCellWidth, cellHeight, "FD")
 }
 
-func showImageAssuranceChecks( pdf *gopdf.GoPdf, checksDa []data.CheckPerformedType)  {
+func showImageAssuranceChecks( checksDa []data.CheckPerformedType)  {
 	var checks [2][5]string
 	var i int
 	for i=0;i < len(checksDa); {
@@ -110,17 +121,17 @@ func showImageAssuranceChecks( pdf *gopdf.GoPdf, checksDa []data.CheckPerformedT
 		}
 		i++
 		if i%numberCellInRow == 0 {
-			checkEndOfPageWithoutBr( pdf, brSize+2*cellHeight)
-			showTwoLineTable(pdf, leftMargin, pdf.GetY()+brSize, numberCellInRow)
-			showTextIntoTable(pdf, leftMargin, pdf.GetY()+brSize, &checks, numberCellInRow)
-			pdf.SetY( pdf.GetY())
+			checkEndOfPageWithoutBr( brSize+2*cellHeight)
+			showTwoLineTable( leftMargin, pdf.GetY()+brSize, numberCellInRow)
+			showTextIntoTable( leftMargin, pdf.GetY()+brSize, &checks, numberCellInRow)
+			pdf.SetY( pdf.GetY()+padding)
 			pdf.SetX(leftMargin)
 		}
 	}
 	if i%numberCellInRow != 0 {
-		checkEndOfPageWithBr( pdf, brSize+2*cellHeight)
-		showTwoLineTable(pdf, leftMargin, pdf.GetY()+brSize, i%numberCellInRow)
-		showTextIntoTable(pdf, leftMargin, pdf.GetY()+brSize, &checks, i%numberCellInRow)
+		checkEndOfPageWithoutBr( brSize+2*cellHeight)
+		showTwoLineTable( leftMargin, pdf.GetY()+brSize, i%numberCellInRow)
+		showTextIntoTable( leftMargin, pdf.GetY()+brSize, &checks, i%numberCellInRow)
 		pdf.SetY( pdf.GetY()+ padding)
 		pdf.SetX(leftMargin)
 	}

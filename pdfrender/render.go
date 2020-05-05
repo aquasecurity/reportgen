@@ -7,12 +7,16 @@ import (
 	"time"
 )
 
+var pdf *gopdf.GoPdf
+
 func Render(output string, data *data.Report) error {
 	currentDate := time.Now().Format(dateFormat)
 
-	pdf := gopdf.GoPdf{}
+	pdf = &gopdf.GoPdf{}
 	pdf.Start(gopdf.Config{ PageSize: *gopdf.PageSizeA4 }) //595.28, 841.89 = A4
+	pdf.SetLeftMargin(leftMargin)
 	pdf.AddPage()
+
 	err := pdf.AddTTFFont(fontType, ttfPathRegular)
 	if err != nil {
 		return err
@@ -69,7 +73,7 @@ func Render(output string, data *data.Report) error {
 	summaryBlochHeight := 125.0
 	pdf.SetX(leftMargin)
 	pdf.SetY(yLine2)
-	addHr(&pdf, yLine2)
+	addHr(yLine2)
 
 	pdf.SetFillColor(246,249,250)
 	pdf.RectFromUpperLeftWithStyle(leftMargin, yLine2, width, summaryBlochHeight, "F")
@@ -117,7 +121,7 @@ func Render(output string, data *data.Report) error {
 
 	pdf.Cell(nil, "Image is ")
 
-	addCompliantText(&pdf, data.General.AssuranceResults.Disallowed)
+	addCompliantText(data.General.AssuranceResults.Disallowed)
 
 	// Block Number of Vulnerabilities
 	pdf.Br(brSize*1.5)
@@ -129,8 +133,8 @@ func Render(output string, data *data.Report) error {
 	pdf.SetLineWidth(0.5)
 
 	pdf.SetFont(fontTypeBold, "", 10)
-	showColorfulTable(&pdf, yTable1)
-	showTextIntoFiveColumnsTable(&pdf, leftMargin, yTable1, &[2][5]string{
+	showColorfulTable(yTable1)
+	showTextIntoFiveColumnsTable(leftMargin, yTable1, &[2][5]string{
 		{"CRITICAL","HIGH","MEDIUM","LOW","NEGLIGIBLE",},
 		{strconv.Itoa( data.General.Critical), strconv.Itoa(data.General.High),strconv.Itoa(data.General.Medium),strconv.Itoa(data.General.Low),strconv.Itoa(data.General.Negligible),},
 	})
@@ -160,12 +164,12 @@ func Render(output string, data *data.Report) error {
 		pdf.Br(brSize)
 		pdf.SetX(leftMargin)
 		pdf.Cell(nil, "Image Assurance Checks for " + name)
-		showImageAssuranceChecks(&pdf, policiesChecks[name])
+		showImageAssuranceChecks(policiesChecks[name])
 		pdf.Br(brSize)
 	}
 
 	// Sensitive Data
-	checkEndOfPageWithBr( &pdf, brSize+80)
+	checkEndOfPageWithBr( brSize+80)
 
 	pdf.SetFont(fontTypeBold, "", 12)
 	pdf.Cell(nil, "Sensitive Data")
@@ -175,18 +179,18 @@ func Render(output string, data *data.Report) error {
 	pdf.SetFont(fontType, "", 9)
 	if data.Sensitive != nil && data.Sensitive.Count > 0 {
 		for _, result := range data.Sensitive.Results {
-			addCellText( &pdf, leftMargin, pdf.GetY(), width, 15, "Type:")
-			addCellText( &pdf, leftMargin, pdf.GetY()+15, width, 15, result.Type)
-			addCellText( &pdf, leftMargin, pdf.GetY()+15, width, 15, "Path:")
-			addCellText( &pdf, leftMargin, pdf.GetY()+15, width, 15, result.Path)
-			checkEndOfPageWithBr( &pdf, brSize+60)
+			addCellText( leftMargin, pdf.GetY(), width, 15, "Type:")
+			addCellText( leftMargin, pdf.GetY()+15, width, 15, result.Type)
+			addCellText( leftMargin, pdf.GetY()+15, width, 15, "Path:")
+			addCellText( leftMargin, pdf.GetY()+15, width, 15, result.Path)
+			checkEndOfPageWithBr( brSize+60)
 		}
 	} else {
 		pdf.SetFont(fontType, "", 10)
 		pdf.Cell(nil, "None found.")
 	}
 	//Malware
-	checkEndOfPageWithBr( &pdf, 100)
+	checkEndOfPageWithBr( 100)
 	pdf.SetFont(fontTypeBold, "", 12)
 	pdf.Cell(nil, "Malware")
 	pdf.Br(brSize)
@@ -197,15 +201,15 @@ func Render(output string, data *data.Report) error {
 	if data.Malware != nil && data.Malware.Count > 0 {
 		malwareTitleWidth := 40.0+2*padding
 		for _, result := range data.Malware.Results {
-			addCellText( &pdf, leftMargin, pdf.GetY(), malwareTitleWidth, 15, "Malware")
-			addCellText( &pdf, leftMargin+malwareTitleWidth, pdf.GetY(), width-malwareTitleWidth, rowSize, result.Malware)
+			addCellText( leftMargin, pdf.GetY(), malwareTitleWidth, 15, "Malware")
+			addCellText( leftMargin+malwareTitleWidth, pdf.GetY(), width-malwareTitleWidth, rowSize, result.Malware)
 
-			addCellText( &pdf, leftMargin, pdf.GetY()+15, malwareTitleWidth, 15, "Path")
-			addCellText( &pdf, leftMargin+malwareTitleWidth, pdf.GetY(), width-malwareTitleWidth, rowSize, result.Path)
+			addCellText( leftMargin, pdf.GetY()+15, malwareTitleWidth, 15, "Path")
+			addCellText( leftMargin+malwareTitleWidth, pdf.GetY(), width-malwareTitleWidth, rowSize, result.Path)
 
-			addCellText( &pdf, leftMargin, pdf.GetY()+15, malwareTitleWidth, 15, "Hash")
-			addCellText( &pdf, leftMargin+malwareTitleWidth, pdf.GetY(), width-malwareTitleWidth, rowSize, result.Hash)
-			checkEndOfPageWithBr( &pdf, brSize+45)
+			addCellText( leftMargin, pdf.GetY()+15, malwareTitleWidth, 15, "Hash")
+			addCellText( leftMargin+malwareTitleWidth, pdf.GetY(), width-malwareTitleWidth, rowSize, result.Hash)
+			checkEndOfPageWithBr( brSize+45)
 		}
 	} else {
 		pdf.SetFont(fontType, "", 10)
@@ -213,19 +217,25 @@ func Render(output string, data *data.Report) error {
 	}
 
 	// Scan History
-	checkEndOfPageWithBr( &pdf, rowSize*3+padding*3+brSize)
-
-	pdf.SetFont(fontTypeBold, "", 12)
-	pdf.Cell(nil, "Scan History")
-	pdf.Br(brSize)
 	if data.ScanHistory != nil {
-		showScanHistory( &pdf, data.ScanHistory)
+		checkEndOfPageWithBr( rowSize*3+padding*3+brSize)
+
+		pdf.SetFont(fontTypeBold, "", 12)
+		pdf.Cell(nil, "Scan History")
+		pdf.Br(brSize)
+		showScanHistory( data.ScanHistory)
+	}
+	// end of ScanHistory
+
+	// The bench results for a host
+	if data.BenchResults != nil {
+		addBenchResults( data.BenchResults)
 	}
 
-	// end of ScanGistory
+	// end of BenchResults
 
-	checkEndOfPageWithBr( &pdf, heightPage/2)
-	addHr(&pdf, pdf.GetY())
+	checkEndOfPageWithBr( heightPage/2)
+	addHr( pdf.GetY())
 	// line
 	pdf.Br(brSize)
 	pdf.SetX(leftMargin)
@@ -238,7 +248,7 @@ func Render(output string, data *data.Report) error {
 	pdf.Cell(nil, "This section contains the findings in more detail, ordered by severity")
 
 	for _, vuln := range data.Vulnerabilities.Results {
-		addVulnBlock( &pdf, vuln)
+		addVulnBlock( vuln)
 	}
 	return pdf.WritePdf(output)
 }
