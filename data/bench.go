@@ -1,10 +1,10 @@
 package data
 
 type TestResultBenchType struct {
+	TestNumber     string   `json:"test_number"`
 	Status         string   `json:"status"`
 	TestDesc       string   `json:"test_desc"`
 	TestInfo       []string `json:"test_info"`
-	TestNumber     string   `json:"test_number"`
 	ActualValue    string   `json:"actual_value"`
 	ExpectedResult string   `json:"expected_result"`
 }
@@ -31,5 +31,5 @@ type BenchResultsType struct {
 	Cis       BaseBenchType `json:"cis"`
 	KubeBench BaseBenchType `json:"kube_bench"`
 	Linux     BaseBenchType `json:"linux"`
-	OpenShift BaseBenchType `json:"openshift"`
+	Openshift BaseBenchType `json:"openshift"`
 }

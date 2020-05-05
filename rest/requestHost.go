@@ -8,11 +8,6 @@ import (
 	"sync"
 )
 
-/*
-	To get the bench results:
-	/api/v2/risks/bench/node_id/bench_results
- */
-
 func GetHostData(server, user, password, host string) *data.Report {
 	report := new(data.Report)
 	report.RequestType = data.HostRequest

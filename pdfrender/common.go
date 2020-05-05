@@ -73,7 +73,6 @@ func checkEndOfPage(deltaY float64, needBr bool) {
 			pdf.Br(brSize)
 		}
 	}
-	pdf.SetX(leftMargin)
 }
 
 func addHrGreyH( yLeft, h float64) {
@@ -130,6 +129,18 @@ func setLowBackgroundColor() {
 }
 func setNegligibleBackgroundColor() {
 	pdf.SetFillColor(0,112,192)
+}
+
+func setOrangeBackgroundColor() {
+	pdf.SetFillColor(255,165,0)
+}
+
+func setDarkGreenBackgroundColor()  {
+	pdf.SetFillColor(76,175,81)
+}
+
+func setGreyBackgroundColor()  {
+	pdf.SetFillColor(169,169,169)
 }
 
 func SetSeverityColor( severity string) {

@@ -64,6 +64,19 @@ func addBlock( x, y, w,h float64, text string)  {
 	pdf.CellWithOption(&rect, text, cellOption)
 }
 
+func addCellTextLeftTop(w, h float64, text string)  {
+	opt := gopdf.CellOption{
+		Align:  gopdf.Top | gopdf.Left,
+		Border: 0,
+		Float:  gopdf.Right,
+	}
+	rect := gopdf.Rect{
+		W: w,
+		H: h,
+	}
+	pdf.CellWithOption(&rect, text, opt)
+}
+
 func addCellText(x, y, w, h float64, text string) {
 	addCellBorder( x,y,w,h)
 	opt := gopdf.CellOption{
