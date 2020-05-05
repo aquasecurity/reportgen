@@ -40,8 +40,7 @@ func GetHostData(server, user, password, host string) *data.Report {
 		hostAssurances := new(data.HostAssuranceType)
 		assuranceSource := getData(url, user, password)
 		if err := json.Unmarshal( assuranceSource, hostAssurances); err != nil {
-			fmt.Println("Can't parse response from server (status):")
-			fmt.Println(err.Error())
+			fmt.Println("Can't parse response from server (status):", err.Error())
 			os.Exit(1)
 		}
 		report.General.AssuranceResults.Disallowed = hostAssurances.Disallowed
@@ -56,7 +55,7 @@ func GetHostData(server, user, password, host string) *data.Report {
 		report.Malware = getMalwares(user, password, url)
 	}()
 
-	//
+	// Get vulnerabilities
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -64,10 +63,19 @@ func GetHostData(server, user, password, host string) *data.Report {
 		report.Vulnerabilities = getVulnerabilities(user, password, []string{all_severities}, data.HostRequest, baseUrl)
 	}()
 
+	// get the bench results:
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		url := getUrlApi(server, "api/v2/risks/bench/") + hostData.NodeId + "/bench_results"
+		benchResultsSource := getData(url, user, password)
+		report.BenchResults = new (data.BenchResultsType)
+		if err := json.Unmarshal(benchResultsSource, report.BenchResults); err != nil {
+			fmt.Println("Can't parse response from server (the bench results):", err.Error())
+			os.Exit(1)
+		}
+	}()
+
 	wg.Wait()
-
-	fmt.Println("Vulnerabilities:")
-	//fmt.Printf("%v", report.Vulnerabilities)
-
 	return report
 }

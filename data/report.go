@@ -14,6 +14,8 @@ type Report struct {
 	Malware *MalwareType
 	Vulnerabilities *VulnerabilitiesType
 	ScanHistory *ScanHistoryType
+
+	BenchResults *BenchResultsType
 }
 
 func (report *Report) GetImageAssurancePolicies() (map[string]bool,map[string][]CheckPerformedType) {
