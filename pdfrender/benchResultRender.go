@@ -10,9 +10,11 @@ import (
 
 func addBenchResults( benchResults *data.BenchResultsType ) {
 	checkEndOfPageWithBr( rowSize*10 )
+	addHr(pdf.GetY())
+	pdf.Br(padding)
 
-	pdf.SetFont(fontTypeBold, "", 12)
-	pdf.Cell(nil, "The bench result")
+	pdf.SetFont(fontTypeBold, "", 13)
+	pdf.Cell(nil, "Compliance Results")
 	pdf.Br(brSize)
 	showTestBlock(benchResults.Cis.Result.Tests, "CIS")
 	showTestBlock(benchResults.KubeBench.Result.Tests, "kube-bench")
@@ -79,7 +81,7 @@ func showTestBlock( tests []data.TestBenchType, title string )  {
 
 func showColorfulData(fail, warn, pass, info int)  {
 	baseY := pdf.GetY()
-	baseX := pdf.GetX()
+	baseX := pdf.GetX()+padding*2
 	w := 20.0+padding*2
 
 	failTextBlock(baseX, baseY, w, strconv.Itoa(fail), false)
@@ -89,7 +91,7 @@ func showColorfulData(fail, warn, pass, info int)  {
 	passTextBlock(baseX, baseY, w, strconv.Itoa(pass), false)
 	baseX += w+padding
 	infoTextBlock(baseX, baseY, w, strconv.Itoa(info), false)
-	pdf.SetY( baseY+rowSize)
+	pdf.SetY( baseY+rowSize+padding*0.5)
 	setDefaultBackgroundColor()
 	pdf.SetTextColor(0,0,0)
 }
