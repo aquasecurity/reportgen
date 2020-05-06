@@ -15,17 +15,31 @@ func GetHostData(server, user, password, host string) *data.Report {
 	hostData := new(data.HostType)
 	url := getUrlApi(server, api_host) + host
 	hostSource := getData(url, user, password)
-	fmt.Println("[DEBUG] Host data:",string(hostSource))
 
 	if err := json.Unmarshal(hostSource, hostData); err != nil {
-		fmt.Println("Can't parse response from server (host):")
-		fmt.Println(string(hostSource))
+		fmt.Println("Can't parse response from server (host):", err.Error())
 		os.Exit(1)
 	}
 
 	report.General = hostData.GetGeneral()
 
 	var wg sync.WaitGroup
+
+	// Get common data (OS, address, host id )
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		url = getUrlApi(server, "api/v1/hosts/")+ hostData.NodeId
+		commonSource := getData(url, user, password)
+		var hostCommon data.HostCommonType
+		if err := json.Unmarshal(commonSource, &hostCommon); err != nil {
+			fmt.Println("Can't parse response from server (host):", err.Error())
+			os.Exit(1)
+		}
+		report.General.Os = hostCommon.HostOs
+		report.General.Address = hostCommon.Address
+	}()
+
 	// To get the assurance checks:
 	wg.Add(1)
 	go func() {

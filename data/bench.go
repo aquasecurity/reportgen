@@ -33,3 +33,8 @@ type BenchResultsType struct {
 	Linux     BaseBenchType `json:"linux"`
 	Openshift BaseBenchType `json:"openshift"`
 }
+
+type HostCommonType struct {
+	HostOs string `json:"host_os"`
+	Address string `json:"address"`
+}
