@@ -18,6 +18,7 @@ type GeneralType struct {
 	Disallowed bool `json:"disallowed"`
 	Os string `json:"os"`
 	OsVersion string `json:"os_version"`
+	Address string
 	Created string `json:"created"`
 
 	Critical int `json:"crit_vulns"`

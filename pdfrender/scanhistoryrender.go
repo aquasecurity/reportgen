@@ -7,12 +7,12 @@ import (
 	"time"
 )
 
-func showScanHistory(pdf *gopdf.GoPdf, scans *data.ScanHistoryType) {
+func showScanHistory( scans *data.ScanHistoryType) {
 	cellScanWidth := width/5.0
 
 	title := []string{"Scan Date", "Image ID", "Security Status", "Image Creation Date", "Scan results"}
 	pdf.SetFont(fontTypeBold, "", 10)
-	showScanRow( pdf, title, cellScanWidth)
+	showScanRow( title, cellScanWidth)
 
 	pdf.Br(brSize)
 	for _, scan := range scans.Results {
@@ -38,7 +38,7 @@ func showScanHistory(pdf *gopdf.GoPdf, scans *data.ScanHistoryType) {
 		pdf.Cell(nil, imageId)
 
 		pdf.SetX( leftMargin + cellScanWidth*2)
-		addCompliantText( pdf, scan.SecurityStatus)
+		addCompliantText( scan.SecurityStatus)
 
 		pdf.SetX( leftMargin + cellScanWidth*3)
 		pdf.Cell(nil, creationDateFormatted)
@@ -48,9 +48,9 @@ func showScanHistory(pdf *gopdf.GoPdf, scans *data.ScanHistoryType) {
 
 		pdf.SetY(pdf.GetY() + rowSize + padding/5)
 
-		addHrGreyH(pdf, pdf.GetY(), 0.5)
+		addHrGreyH( pdf.GetY(), 0.5)
 
-		checkEndOfPageWithoutBr(pdf, rowSize+padding)
+		checkEndOfPageWithoutBr( rowSize+padding)
 	}
 }
 
@@ -69,45 +69,45 @@ func showCountsResults(pdf *gopdf.GoPdf, results data.ScanHistoryResult, width f
 	xBegin := pdf.GetX()
 
 	if results.CriticalCount > 0 {
-		setCriticalBackgroundColor(pdf)
+		setCriticalBackgroundColor()
 	} else {
-		setLightGrayBackgroundColor(pdf)
+		setLightGrayBackgroundColor()
 	}
 	pdf.RectFromUpperLeftWithStyle( pdf.GetX(), pdf.GetY(), maxWidth,rowSize, "F")
 	addCellCount( pdf, critical, maxWidth )
 
 	pdf.SetX(xBegin+maxWidth)
 	if results.HighCount > 0 {
-		setHighBackgroundColor(pdf)
+		setHighBackgroundColor()
 	} else {
-		setLightGrayBackgroundColor(pdf)
+		setLightGrayBackgroundColor()
 	}
 	pdf.RectFromUpperLeftWithStyle( pdf.GetX(), pdf.GetY(), maxWidth,rowSize, "F")
 	addCellCount( pdf, high, maxWidth)
 
 	pdf.SetX(xBegin+2*maxWidth)
 	if results.MediumCount > 0 {
-		setMediumBackgroundColor(pdf)
+		setMediumBackgroundColor()
 	} else {
-		setLightGrayBackgroundColor(pdf)
+		setLightGrayBackgroundColor()
 	}
 	pdf.RectFromUpperLeftWithStyle( pdf.GetX(), pdf.GetY(), maxWidth,rowSize, "F")
 	addCellCount( pdf, medium, maxWidth )
 
 	pdf.SetX(xBegin+3*maxWidth)
 	if results.LowCount > 0 {
-		setLowBackgroundColor(pdf)
+		setLowBackgroundColor()
 	} else {
-		setLightGrayBackgroundColor(pdf)
+		setLightGrayBackgroundColor()
 	}
 	pdf.RectFromUpperLeftWithStyle( pdf.GetX(), pdf.GetY(), maxWidth,rowSize, "F")
 	addCellCount( pdf, low, maxWidth )
 
 	pdf.SetX(xBegin+ 4*maxWidth)
 	if results.NegCount > 0 {
-		setNegligibleBackgroundColor(pdf)
+		setNegligibleBackgroundColor()
 	} else {
-		setLightGrayBackgroundColor(pdf)
+		setLightGrayBackgroundColor()
 	}
 	pdf.RectFromUpperLeftWithStyle( pdf.GetX(), pdf.GetY(), maxWidth,rowSize, "F")
 	addCellCount( pdf, neg, maxWidth )
@@ -115,9 +115,9 @@ func showCountsResults(pdf *gopdf.GoPdf, results data.ScanHistoryResult, width f
 	pdf.SetX(xBegin+ (5*maxWidth)+(padding/5.0))
 
 	if results.MalwareCount > 0 {
-		setDarkGrayBackgroundColor(pdf)
+		setDarkGrayBackgroundColor()
 	} else {
-		setLightGrayBackgroundColor(pdf)
+		setLightGrayBackgroundColor()
 	}
 
 	imgMalwareWidth := 8.0
@@ -134,7 +134,7 @@ func showCountsResults(pdf *gopdf.GoPdf, results data.ScanHistoryResult, width f
 	pdf.SetX( xMalwareBase+imgMalwareWidth)
 	addCellCount( pdf, malware, maxWidth )
 
-	setDefaultBackgroundColor(pdf)
+	setDefaultBackgroundColor()
 }
 
 func addCellCount(pdf *gopdf.GoPdf,  text string, w float64) {
@@ -146,10 +146,10 @@ func addCellCount(pdf *gopdf.GoPdf,  text string, w float64) {
 	pdf.SetTextColor(0,0,0)
 }
 
-func showScanRow(pdf *gopdf.GoPdf, content []string, w float64) {
-	setLightGrayBackgroundColor(pdf)
+func showScanRow( content []string, w float64) {
+	setLightGrayBackgroundColor()
 	pdf.RectFromUpperLeftWithStyle( leftMargin, pdf.GetY(), width, rowSize+padding, "F")
-	setDefaultBackgroundColor(pdf)
+	setDefaultBackgroundColor()
 	pdf.SetY(pdf.GetY()+padding*0.8)
 
 	pdf.SetX(leftMargin+padding)
