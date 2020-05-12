@@ -26,14 +26,20 @@ This command will generate a report file called "report.pdf" and put it under /r
 ```
 NAME:
   reportgen - A tool to generate PDF reports for Aqua CSP images and hosts
+
 USAGE:
-  main [options] 
-MANDATORY OPTIONS:
+  main [-image|-host] <name> [parameters] 
+
+OPTIONS:
+  -image        Image name to generate report for (e.g. mongo:latest)
+  -host         Host name to generate report for 
+
+MANDATORY PARAMETERS:
   -server       Aqua CSP server URL
   -user         User name
   -password     Password
-  -image        Image name (e.g. mongo:latest)
   -output       Output file where to save PDF
-OPTIONAL OPTIONS:
+
+OPTIONAL PARAMETERS:
   -severity     Comma seperated list of severities to export (critical, high, medium, low)
 ```
