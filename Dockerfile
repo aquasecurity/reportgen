@@ -15,7 +15,8 @@ COPY --from=builder /reportgen/main /reportgen/
 COPY --from=builder /reportgen/assets/*.ttf /reportgen/assets/
 COPY --from=builder /reportgen/assets/*.png /reportgen/assets/
 WORKDIR /reportgen
-RUN adduser -D -g '' report
+RUN addgroup -g 1099 report
+RUN adduser -D -g '' -G report -u 1099 report
 RUN chown -R report:report /reportgen
 RUN chown -R report:report /reports
 USER report
