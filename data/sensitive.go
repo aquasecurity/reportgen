@@ -6,6 +6,6 @@ type SensitiveResult struct {
 }
 
 type SensitiveType struct {
-	Count int `json:"count"`
+	Count   int               `json:"count"`
 	Results []SensitiveResult `json:"result"`
 }

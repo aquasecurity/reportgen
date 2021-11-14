@@ -1,13 +1,13 @@
 package rest
 
 import (
-	"../data"
 	"encoding/json"
 	"fmt"
+	"github.com/aquasecurity/reportgen/data"
 	"os"
 )
 
-func getVulnerabilitiesUrl(requestType int, currentPage, pageSize int, urlBase string ) string {
+func getVulnerabilitiesUrl(requestType int, currentPage, pageSize int, urlBase string) string {
 	var url string
 	switch requestType {
 	case data.ImageRequest:
@@ -28,13 +28,13 @@ func getVulnerabilities(user, password string, severities []string, requestType 
 	for _, severity := range severities {
 		vulnCount := 0
 		var maxVulnerabilities int
-		for page:=1; vulnCount < maxVulnerabilities || vulnCount == 0;page++ {
+		for page := 1; vulnCount < maxVulnerabilities || vulnCount == 0; page++ {
 			urlForVulnerabilitiesD := getVulnerabilitiesUrl(requestType, page, defaultPageSize, urlBase)
 			if severity != all_severities {
 				urlForVulnerabilitiesD += "&severity=" + severity
 			}
-			vulnerabiliti := getData( urlForVulnerabilitiesD, user, password)
-			vuln := new (data.VulnerabilitiesType)
+			vulnerabiliti := getData(urlForVulnerabilitiesD, user, password)
+			vuln := new(data.VulnerabilitiesType)
 			if err := json.Unmarshal(vulnerabiliti, &vuln); err != nil {
 				fmt.Println("Can't parse response from server (vulnerabiliti):")
 				fmt.Println(string(vulnerabiliti))

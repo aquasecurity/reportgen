@@ -1,15 +1,15 @@
 package rest
 
 import (
-	"../data"
 	"encoding/json"
 	"fmt"
+	"github.com/aquasecurity/reportgen/data"
 	"os"
 	"strings"
 	"sync"
 )
 
-func GetImageData(server, user, password, registry, image string, severities []string ) *data.Report {
+func GetImageData(server, user, password, registry, image string, severities []string) *data.Report {
 	if len(severities) > 0 {
 		fmt.Println("Next severities will be selected:")
 		for _, s := range severities {

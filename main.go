@@ -1,59 +1,59 @@
 package main
 
 import (
-	"./data"
-	"./pdfrender"
-	"./rest"
 	"flag"
 	"fmt"
+	"github.com/aquasecurity/reportgen/data"
+	"github.com/aquasecurity/reportgen/pdfrender"
+	"github.com/aquasecurity/reportgen/rest"
 	"github.com/joho/godotenv"
 	"os"
 	"strings"
 )
 
 var (
-	serverUrl string
-	registryName string
-	imageName string
-	host string
-	user string
-	password string
-	output string
-	severities []string
+	serverUrl      string
+	registryName   string
+	imageName      string
+	host           string
+	user           string
+	password       string
+	output         string
+	severities     []string
 	severityParams string
 
-	severitiesTypes = map[string]struct{} {
-		"critical":{},
-		"high":{},
-		"medium":{},
-		"low":{},
+	severitiesTypes = map[string]struct{}{
+		"critical": {},
+		"high":     {},
+		"medium":   {},
+		"low":      {},
 	}
 )
 
 const (
 	cmdRegistry = "registry"
-	cmdServer = "server"
-	cmdImage = "image"
-	cmdHost = "host"
-	cmdUser = "user"
+	cmdServer   = "server"
+	cmdImage    = "image"
+	cmdHost     = "host"
+	cmdUser     = "user"
 	cmdPassword = "password"
-	cmdOutput = "output"
+	cmdOutput   = "output"
 	cmdSeverity = "severity"
 )
 
-func init()  {
+func init() {
 	flag.StringVar(&serverUrl, cmdServer, "", "URL of a data server")
 	flag.StringVar(&registryName, cmdRegistry, "", "name of a registry")
 	flag.StringVar(&imageName, cmdImage, "", "name of an image")
 	flag.StringVar(&user, cmdUser, "", "a user for the basic authentication")
 	flag.StringVar(&password, cmdPassword, "", "a user's password for the basic authentication")
 	flag.StringVar(&output, cmdOutput, "report.pdf", "a name of output pdf file")
-	flag.StringVar(&severityParams, cmdSeverity, "", "to get list of vulnerabilities. critical,high,medium,low" )
+	flag.StringVar(&severityParams, cmdSeverity, "", "to get list of vulnerabilities. critical,high,medium,low")
 	flag.StringVar(&host, cmdHost, "", "PDF generation to a host name")
 }
 
 func checkRequiredParams() bool {
-	if (host != "" && imageName != "") || (host=="" && imageName == "") {
+	if (host != "" && imageName != "") || (host == "" && imageName == "") {
 		fmt.Println("Wrong params: you should setup either a host or am image!")
 		return false
 	}
@@ -65,14 +65,14 @@ func checkRequiredParams() bool {
 		}
 	}
 
-	if user == ""  {
+	if user == "" {
 		if user = os.Getenv("user"); user == "" {
 			fmt.Println("User isn't setup (as -user param or environment variable)")
 			return false
 		}
 	}
 	if password == "" {
-		if password = os.Getenv("password");password == "" {
+		if password = os.Getenv("password"); password == "" {
 			fmt.Println("Password isn't setup (as -password param or environment variable)")
 			return false
 		}
@@ -113,7 +113,7 @@ func main() {
 	flag.Parse()
 	godotenv.Load()
 
-	if ok:=checkRequiredParams(); !ok {
+	if ok := checkRequiredParams(); !ok {
 		fmt.Println("Run with key '-h' for usage.")
 		os.Exit(1)
 	}

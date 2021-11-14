@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	api_image         = "api/v2/images/"
-	api_host          = "api/v2/infrastructure/node/"
+	api_image = "api/v2/images/"
+	api_host  = "api/v2/infrastructure/node/"
 
 	image_vulnerabiliti_url = "/vulnerabilities"
 	image_sensitive_url     = "/sensitive"
@@ -20,14 +20,14 @@ const (
 	image_scanhistory_url   = "/scan_history"
 )
 
-func getData(url, user, password string) []byte  {
+func getData(url, user, password string) []byte {
 	fmt.Println("Getting data from", url)
 
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
 	req.SetBasicAuth(user, password)
 	resp, err := client.Do(req)
-	if err != nil{
+	if err != nil {
 		log.Fatal(err)
 	}
 
@@ -43,11 +43,10 @@ func getData(url, user, password string) []byte  {
 
 func getUrlApi(server, api string) string {
 	var slash string
-	if strings.HasSuffix( server,"/") {
+	if strings.HasSuffix(server, "/") {
 		slash = ""
 	} else {
 		slash = "/"
 	}
 	return server + slash + api
 }
-
