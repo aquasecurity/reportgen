@@ -54,7 +54,7 @@ func init() {
 
 func checkRequiredParams() bool {
 	if (host != "" && imageName != "") || (host == "" && imageName == "") {
-		fmt.Println("Wrong params: you should setup either a host or am image!")
+		fmt.Println("Wrong params: you should setup either a host or an image!")
 		return false
 	}
 
