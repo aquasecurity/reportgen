@@ -35,6 +35,6 @@ type BenchResultsType struct {
 }
 
 type HostCommonType struct {
-	HostOs string `json:"host_os"`
+	HostOs  string `json:"host_os"`
 	Address string `json:"address"`
 }

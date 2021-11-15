@@ -1,9 +1,9 @@
 package rest
 
 import (
-	"../data"
 	"encoding/json"
 	"fmt"
+	"github.com/aquasecurity/reportgen/data"
 	"os"
 	"sync"
 )
@@ -29,7 +29,7 @@ func GetHostData(server, user, password, host string) *data.Report {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		url = getUrlApi(server, "api/v1/hosts/")+ hostData.NodeId
+		url = getUrlApi(server, "api/v1/hosts/") + hostData.NodeId
 		commonSource := getData(url, user, password)
 		var hostCommon data.HostCommonType
 		if err := json.Unmarshal(commonSource, &hostCommon); err != nil {
@@ -44,11 +44,11 @@ func GetHostData(server, user, password, host string) *data.Report {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		url = getUrlApi(server, "api/v2/status/host/")+ hostData.NodeId
+		url = getUrlApi(server, "api/v2/status/host/") + hostData.NodeId
 
 		hostAssurances := new(data.HostAssuranceType)
 		assuranceSource := getData(url, user, password)
-		if err := json.Unmarshal( assuranceSource, hostAssurances); err != nil {
+		if err := json.Unmarshal(assuranceSource, hostAssurances); err != nil {
 			fmt.Println("Can't parse response from server (status):", err.Error())
 			os.Exit(1)
 		}
@@ -60,7 +60,7 @@ func GetHostData(server, user, password, host string) *data.Report {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		url = getUrlApi(server, "api/v1/hosts/")+hostData.NodeId + "/malware"
+		url = getUrlApi(server, "api/v1/hosts/") + hostData.NodeId + "/malware"
 		report.Malware = getMalwares(user, password, url)
 	}()
 
@@ -68,7 +68,7 @@ func GetHostData(server, user, password, host string) *data.Report {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		baseUrl := getUrlApi(server, "api/v1/hosts/")+hostData.NodeId
+		baseUrl := getUrlApi(server, "api/v1/hosts/") + hostData.NodeId
 		report.Vulnerabilities = getVulnerabilities(user, password, []string{all_severities}, data.HostRequest, baseUrl)
 	}()
 
@@ -78,7 +78,7 @@ func GetHostData(server, user, password, host string) *data.Report {
 		defer wg.Done()
 		url := getUrlApi(server, "api/v2/risks/bench/") + hostData.NodeId + "/bench_results"
 		benchResultsSource := getData(url, user, password)
-		report.BenchResults = new (data.BenchResultsType)
+		report.BenchResults = new(data.BenchResultsType)
 		if err := json.Unmarshal(benchResultsSource, report.BenchResults); err != nil {
 			fmt.Println("Can't parse response from server (the bench results):", err.Error())
 			os.Exit(1)
