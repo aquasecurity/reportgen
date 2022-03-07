@@ -5,8 +5,11 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/mail"
 	"os"
 	"strings"
+
+	aquaClient "github.com/aquasecurity/terraform-provider-aquasec/client"
 )
 
 const (
@@ -20,12 +23,28 @@ const (
 	image_scanhistory_url   = "/scan_history"
 )
 
+func loginAquaSaas(user string) bool {
+	_, err := mail.ParseAddress(user)
+	return err == nil
+}
+
 func getData(url, user, password string) []byte {
 	fmt.Println("Getting data from", url)
 
-	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
-	req.SetBasicAuth(user, password)
+	if err != nil {
+		log.Fatalf("Can't create a request to %q: %v", url, err)
+	}
+	if loginAquaSaas(user) {
+		token, err := aquaClient.NewClient(url, user, password, strings.HasPrefix(url, "https"), nil).GetUSEAuthToken()
+		if err != nil {
+			log.Fatalf("Can't get the Aqua SaaS token for access to %q: %v", url, err)
+		}
+		req.Header.Set("Authorization", "Bearer "+token)
+	} else {
+		req.SetBasicAuth(user, password)
+	}
+	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Fatal(err)
