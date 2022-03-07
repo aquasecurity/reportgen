@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"net/mail"
+	"net/url"
 	"os"
 	"strings"
 
@@ -28,17 +29,21 @@ func loginAquaSaas(user string) bool {
 	return err == nil
 }
 
-func getData(url, user, password string) []byte {
-	fmt.Println("Getting data from", url)
+func getData(link, user, password string) []byte {
+	fmt.Println("Getting data from", link)
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", link, nil)
 	if err != nil {
-		log.Fatalf("Can't create a request to %q: %v", url, err)
+		log.Fatalf("Can't create a request to %q: %v", link, err)
 	}
 	if loginAquaSaas(user) {
-		token, err := aquaClient.NewClient(url, user, password, strings.HasPrefix(url, "https"), nil).GetUSEAuthToken()
+		u, err := url.Parse(link)
 		if err != nil {
-			log.Fatalf("Can't get the Aqua SaaS token for access to %q: %v", url, err)
+			log.Fatalf("Can't parse a link %q: %v", link, err)
+		}
+		token, err := aquaClient.NewClient(u.Host, user, password, strings.HasPrefix(link, "https"), nil).GetUSEAuthToken()
+		if err != nil {
+			log.Fatalf("Can't get the Aqua SaaS token for access to %q: %v", link, err)
 		}
 		req.Header.Set("Authorization", "Bearer "+token)
 	} else {
@@ -51,7 +56,7 @@ func getData(url, user, password string) []byte {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		fmt.Println("Wrong access to the URL: ", url)
+		fmt.Println("Wrong access to the URL: ", link)
 		fmt.Println("Status:", resp.Status)
 		os.Exit(1)
 	}
