@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/mail"
 	"net/url"
-	"os"
 	"strings"
 
 	aquaClient "github.com/aquasecurity/terraform-provider-aquasec/client"
@@ -56,12 +55,13 @@ func getData(link, user, password string) []byte {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		fmt.Println("Wrong access to the URL: ", link)
-		fmt.Println("Status:", resp.Status)
-		os.Exit(1)
+		log.Fatalf("Wrong access to the URL: %q. Status: %s", link, resp.Status)
 	}
 
 	bodyText, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalf("Can't read a body from %q: %v", link, err)
+	}
 	return bodyText
 }
 
