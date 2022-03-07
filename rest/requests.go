@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"net/mail"
 	"net/url"
 	"strings"
 
@@ -23,9 +22,8 @@ const (
 	image_scanhistory_url   = "/scan_history"
 )
 
-func loginAquaSaas(user string) bool {
-	_, err := mail.ParseAddress(user)
-	return err == nil
+func isAquaSaasFlow(link string) bool {
+	return strings.Contains(link, "cloud.aquasec.com")
 }
 
 func getData(link, user, password string) []byte {
@@ -35,7 +33,7 @@ func getData(link, user, password string) []byte {
 	if err != nil {
 		log.Fatalf("Can't create a request to %q: %v", link, err)
 	}
-	if loginAquaSaas(user) {
+	if isAquaSaasFlow(link) {
 		u, err := url.Parse(link)
 		if err != nil {
 			log.Fatalf("Can't parse a link %q: %v", link, err)
