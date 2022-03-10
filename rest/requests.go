@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 
 	aquaClient "github.com/aquasecurity/terraform-provider-aquasec/client"
 )
@@ -26,6 +27,26 @@ func isAquaSaasFlow(link string) bool {
 	return strings.Contains(link, "cloud.aquasec.com")
 }
 
+var accessToken = ""
+var mutex sync.Mutex
+
+func getToken(link, user, password string) string {
+	mutex.Lock()
+	defer mutex.Unlock()
+	if accessToken != "" {
+		return accessToken
+	}
+	u, err := url.Parse(link)
+	if err != nil {
+		log.Fatalf("Can't parse a link %q: %v", link, err)
+	}
+	accessToken, err = aquaClient.NewClient(u.Host, user, password, u.Scheme == "https", nil).GetUSEAuthToken()
+	if err != nil {
+		log.Fatalf("Can't get the Aqua SaaS token for access to %q: %v", link, err)
+	}
+	return accessToken
+}
+
 func getData(link, user, password string) []byte {
 	fmt.Println("Getting data from", link)
 
@@ -34,15 +55,7 @@ func getData(link, user, password string) []byte {
 		log.Fatalf("Can't create a request to %q: %v", link, err)
 	}
 	if isAquaSaasFlow(link) {
-		u, err := url.Parse(link)
-		if err != nil {
-			log.Fatalf("Can't parse a link %q: %v", link, err)
-		}
-		token, err := aquaClient.NewClient(u.Host, user, password, strings.HasPrefix(link, "https"), nil).GetUSEAuthToken()
-		if err != nil {
-			log.Fatalf("Can't get the Aqua SaaS token for access to %q: %v", link, err)
-		}
-		req.Header.Set("Authorization", "Bearer "+token)
+		req.Header.Set("Authorization", "Bearer "+getToken(link, user, password))
 	} else {
 		req.SetBasicAuth(user, password)
 	}
