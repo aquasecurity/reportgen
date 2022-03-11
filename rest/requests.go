@@ -23,7 +23,7 @@ const (
 )
 
 var accessToken = ""
-var accessUrl = ""
+var aquaHostName = ""
 var mutex sync.Mutex
 
 func getToken(link, user, password string) (string, error) {
@@ -82,7 +82,7 @@ func getToken(link, user, password string) (string, error) {
 		var raw map[string]interface{}
 		_ = json.Unmarshal(eventsBody, &raw)
 		data := raw["data"].(map[string]interface{})
-		accessUrl = "https://" + data["ese_url"].(string)
+		aquaHostName = "https://" + data["ese_url"].(string)
 	}
 	return token, nil
 }
@@ -102,9 +102,9 @@ func getData(link, user, password string) []byte {
 		if err != nil {
 			log.Fatalf("Can't parse a link %q: %v", link, err)
 		}
-		req, err = http.NewRequest("GET", accessUrl+u.Path, nil)
+		req, err = http.NewRequest("GET", aquaHostName+u.Path, nil)
 		if err != nil {
-			log.Fatalf("Can't create a request to %q: %v", accessUrl+u.Path, err)
+			log.Fatalf("Can't create a request to %q: %v", aquaHostName+u.Path, err)
 		}
 		req.Header.Set("Authorization", "Bearer "+token)
 	} else {
