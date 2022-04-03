@@ -39,9 +39,9 @@ var cellOption = gopdf.CellOption{
 }
 
 var imageAssurance = map[string]string{
-	"blacklisted_packages": "Blacklisted Packages",
+	"blacklisted_packages": "Denied Packages",
 	"custom_checks":        "Custom Checks",
-	"cve_blacklist":        "Blacklisted CVE",
+	"cve_blacklist":        "Denied CVE",
 	"force_microenforcer":  "MicroEnforcer Deployed",
 	"license":              "Approved Licenses",
 	"malware":              "Malware",
@@ -52,7 +52,7 @@ var imageAssurance = map[string]string{
 	"root_user":            "Run as Superuser",
 	"sensitive_data":       "Sensitive Data",
 	"trusted_base_images":  "Trusted Base Image",
-	"whitelisted_licenses": "Whitelisted Licenses",
+	"whitelisted_licenses": "Allowed Licenses",
 }
 
 func checkEndOfPageWithoutBr(deltaY float64) {
