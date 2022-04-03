@@ -88,7 +88,7 @@ func getToken(link, user, password string) (string, error) {
 }
 
 func isAquaSaasFlow(link string) bool {
-	return strings.Contains(link, "cloud.aquasec.com")
+	return strings.Contains(link, "cloud.aquasec.com") || strings.Contains(link, "cloud-dev.aquasec.com")
 }
 
 func getData(link, user, password string) []byte {
